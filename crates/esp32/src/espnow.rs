@@ -8,7 +8,7 @@ use std::{
 
 use esp_idf_hal::delay::FreeRtos;
 use esp_idf_svc::{
-    espnow::{EspNow as EspIdfEspNow, PeerInfo, SendStatus},
+    espnow::{EspNow as EspIdfEspNow, PeerInfo},
     sys::ESP_ERR_ESPNOW_NO_MEM,
 };
 
@@ -22,8 +22,11 @@ use crate::saved_state::{RuntimeState, SavedState};
 /// Pairing messages are intentionally not supported here; pairing is
 /// performed exclusively over the physical wire.
 const SEND_QUEUE_CAPACITY: usize = 8;
+const RECEIVE_QUEUE_CAPACITY: usize = 8;
 const SEND_RETRY_DELAY_MS: u32 = 10;
-const TX_STACK_SIZE: usize = 4 * 1024;
+const SEND_SPACING_MS: u32 = 20;
+const TX_STACK_SIZE: usize = 10 * 1024;
+const RX_STACK_SIZE: usize = 10 * 1024;
 
 struct OutgoingPacket {
     peer_address: [u8; 6],
@@ -31,28 +34,22 @@ struct OutgoingPacket {
     length: usize,
 }
 
+struct IncomingPacket {
+    peer_address: [u8; 6],
+    data: Vec<u8>,
+}
+
 pub struct EspNow {
     radio: Arc<EspIdfEspNow<'static>>,
     send_queue: SyncSender<OutgoingPacket>,
 }
 
-fn transmit_packets(
-    radio: Arc<EspIdfEspNow<'static>>,
-    packets: Receiver<OutgoingPacket>,
-    completions: Receiver<SendStatus>,
-) {
+fn transmit_packets(radio: Arc<EspIdfEspNow<'static>>, packets: Receiver<OutgoingPacket>) {
     while let Ok(packet) = packets.recv() {
         loop {
             match radio.send(packet.peer_address, &packet.buffer[..packet.length]) {
                 Ok(()) => {
-                    match completions.recv() {
-                        Ok(SendStatus::SUCCESS) => {}
-                        Ok(SendStatus::FAIL) => {
-                            println!("ESP-NOW delivery to {:02X?} failed", packet.peer_address);
-                        }
-                        Err(_) => return,
-                    }
-
+                    FreeRtos::delay_ms(SEND_SPACING_MS);
                     break;
                 }
                 Err(error) if error.code() == ESP_ERR_ESPNOW_NO_MEM => {
@@ -70,6 +67,61 @@ fn transmit_packets(
     }
 }
 
+fn receive_packets(
+    esp_now: Arc<EspNow>,
+    packets: Receiver<IncomingPacket>,
+    saved_state: Arc<Mutex<SavedState>>,
+    runtime_state: Arc<Mutex<RuntimeState>>,
+    mut on_message: impl FnMut(DeviceId, Message),
+) {
+    while let Ok(packet) = packets.recv() {
+        let Ok(message) = Message::decode(&packet.data) else {
+            continue;
+        };
+
+        let device = {
+            let state = saved_state.lock().expect("saved state mutex poisoned");
+
+            state
+                .peers
+                .iter()
+                .find(|peer| peer.mac == packet.peer_address)
+                .map(|peer| peer.device)
+        };
+
+        let Some(device) = device else {
+            println!(
+                "Ignoring ESP-NOW message from unknown peer {:02X?}",
+                packet.peer_address
+            );
+            continue;
+        };
+
+        runtime_state
+            .lock()
+            .expect("runtime state mutex poisoned")
+            .mark_seen(device);
+
+        match message {
+            Message::Ping(ping) => {
+                let pong = Message::Pong(Pong {
+                    sequence: ping.sequence,
+                });
+
+                if let Err(error) = esp_now.send(packet.peer_address, &pong) {
+                    println!("Failed to send Pong to {:?}: {error:#}", device);
+                }
+            }
+
+            Message::Pong(pong) => {
+                println!("Pong from {:?}, sequence {}", device, pong.sequence);
+            }
+
+            other => on_message(device, other),
+        }
+    }
+}
+
 impl EspNow {
     /// Wraps an initialized ESP-NOW service.
     ///
@@ -77,19 +129,13 @@ impl EspNow {
     pub fn new(radio: EspIdfEspNow<'static>) -> anyhow::Result<Self> {
         let radio = Arc::new(radio);
         let (send_queue, packets) = sync_channel(SEND_QUEUE_CAPACITY);
-        let (completion_sender, completions) = sync_channel(1);
-
-        radio.register_send_cb(move |_peer_address, status| {
-            let _ = completion_sender.try_send(status);
-        })?;
-
         let transmitter_radio = Arc::clone(&radio);
 
         thread::Builder::new()
             .name("esp-now-tx".into())
             .stack_size(TX_STACK_SIZE)
             .spawn(move || {
-                transmit_packets(transmitter_radio, packets, completions);
+                transmit_packets(transmitter_radio, packets);
             })?;
 
         Ok(Self { radio, send_queue })
@@ -113,7 +159,7 @@ impl EspNow {
     /// Queues a normal message for serialized transmission.
     ///
     /// Success means the local queue accepted the packet. The transmitter
-    /// waits for ESP-IDF's send callback before sending the next packet.
+    /// spaces ESP-IDF calls apart to avoid exhausting Wi-Fi buffers.
     pub fn send(&self, peer_address: [u8; 6], message: &Message) -> anyhow::Result<()> {
         let mut buffer = [0u8; 250];
         let length = message.encode(&mut buffer)?;
@@ -136,59 +182,32 @@ impl EspNow {
     ///
     /// Invalid packets, including pairing packets, are ignored. Ping and Pong
     /// are handled here; all application messages are passed to `on_message`.
+    /// The Wi-Fi task only copies packets into a queue. Decoding, state updates,
+    /// logging, and responses run on a separate task with enough stack.
     pub fn on_receive(
         self: &Arc<Self>,
         saved_state: Arc<Mutex<SavedState>>,
         runtime_state: Arc<Mutex<RuntimeState>>,
-        mut on_message: impl FnMut(DeviceId, Message) + Send + 'static,
+        on_message: impl FnMut(DeviceId, Message) + Send + 'static,
     ) -> anyhow::Result<()> {
+        let (receive_queue, packets) = sync_channel(RECEIVE_QUEUE_CAPACITY);
         let esp_now = Arc::clone(self);
 
+        thread::Builder::new()
+            .name("esp-now-rx".into())
+            .stack_size(RX_STACK_SIZE)
+            .spawn(move || {
+                receive_packets(esp_now, packets, saved_state, runtime_state, on_message);
+            })?;
+
         self.radio.register_recv_cb(move |info, data| {
-            let Ok(message) = Message::decode(data) else {
-                return;
+            let packet = IncomingPacket {
+                peer_address: *info.src_addr,
+                data: data.to_vec(),
             };
 
-            let device = {
-                let state = saved_state.lock().expect("saved state mutex poisoned");
-
-                state
-                    .peers
-                    .iter()
-                    .find(|peer| peer.mac == *info.src_addr)
-                    .map(|peer| peer.device)
-            };
-
-            let Some(device) = device else {
-                println!(
-                    "Ignoring ESP-NOW message from unknown peer {:02X?}",
-                    info.src_addr
-                );
-                return;
-            };
-
-            runtime_state
-                .lock()
-                .expect("runtime state mutex poisoned")
-                .mark_seen(device);
-
-            match message {
-                Message::Ping(ping) => {
-                    let pong = Message::Pong(Pong {
-                        sequence: ping.sequence,
-                    });
-
-                    if let Err(error) = esp_now.send(*info.src_addr, &pong) {
-                        println!("Failed to send Pong to {:?}: {error:#}", device);
-                    }
-                }
-
-                Message::Pong(pong) => {
-                    println!("Pong from {:?}, sequence {}", device, pong.sequence);
-                }
-
-                other => on_message(device, other),
-            }
+            // ESP-NOW is lossy. Never block or log from the Wi-Fi task.
+            let _ = receive_queue.try_send(packet);
         })?;
 
         Ok(())

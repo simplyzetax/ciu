@@ -3,7 +3,10 @@ FIRMWARES := bike goggles helmet
 ESPFLASH ?= espflash
 PORT ?=
 MONITOR_BAUD ?= 115200
-ESPFLASH_PORT := $(if $(PORT),--port $(PORT),)
+ESPFLASH_PORT = $(if $(PORT),--port $(PORT),)
+
+deploy-goggles monitor-goggles deploy-monitor-goggles: PORT = /dev/cu.usbserial-10
+deploy-helmet monitor-helmet deploy-monitor-helmet: PORT = /dev/cu.usbserial-210
 
 .PHONY: check check-core check-esp32 check-bike check-goggles check-helmet \
 	$(addprefix build-,$(FIRMWARES)) \
