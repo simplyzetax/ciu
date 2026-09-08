@@ -46,6 +46,15 @@ impl TryFrom<u8> for MessageType {
     }
 }
 
+impl MessageType {
+    const fn encoded_len(self) -> usize {
+        match self {
+            MessageType::Rpm => 3,
+            _ => 2,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ABSMode {
@@ -96,11 +105,7 @@ impl Message {
 
     /// Writes the packet into the provided buffer and returns its length.
     pub fn encode(&self, buffer: &mut [u8]) -> Result<usize, ProtocolError> {
-        // One byte for the type, plus one byte for the value (two for RPM).
-        let packet_length = match self {
-            Message::Rpm(_) => 3,
-            _ => 2,
-        };
+        let packet_length = self.message_type().encoded_len();
 
         // Check before writing so an error leaves the buffer unchanged.
         if buffer.len() < packet_length {
@@ -135,10 +140,7 @@ impl Message {
 
         // The ? returns early if the first byte is not a known message type.
         let message_type = MessageType::try_from(data[0])?;
-        let expected_length = match message_type {
-            MessageType::Rpm => 3,
-            _ => 2,
-        };
+        let expected_length = message_type.encoded_len();
 
         // Validate the length before accessing the value bytes below.
         if data.len() != expected_length {
