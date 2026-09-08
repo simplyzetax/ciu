@@ -1,0 +1,69 @@
+{
+  "source": {
+    "base_url": "https://firmware.sena.com/senabluetoothmanager/",
+    "catalog_url": "https://firmware.sena.com/senabluetoothmanager/Firmware",
+    "revisions_url": "https://firmware.sena.com/senabluetoothmanager/Revisions",
+    "device_manager": "/Applications/SenaDeviceManager.app",
+    "device_manager_version": "4.4.19"
+  },
+  "images": [
+    {
+      "hardware": "SP46 (30K-01, 30K-01D, 30K-02, 30K-02D)",
+      "version": "3.5-build0",
+      "url": "https://firmware.sena.com/senabluetoothmanager/30K_v3.5-build0.img",
+      "path": "firmware/30K_v3.5-build0.img",
+      "bytes": 6150540,
+      "sha256": "e326ed13e013e69dba9e6a1989a445e94b22a935b18b2317821ba0bda8a77e92",
+      "components": [
+        {
+          "name": "30KBT.dfu",
+          "bytes": 1074604,
+          "md5": "cd3f101318618ab68bfb321c6604bee8",
+          "sha256": "e0e4931e27757363d2e9c945223b1512ad5fa321200d0dcb1b07bf57f24f9688"
+        },
+        {
+          "name": "vp.bin",
+          "bytes": 4908120,
+          "md5": "22530c016272756f8eb528944719b0af",
+          "sha256": "17ea03b744083278873725cc6b629aa995655acb3fb0d371f762b23665636819"
+        },
+        {
+          "name": "MESH3.0_v3.0.0.7.ldr",
+          "bytes": 166748,
+          "md5": "e284e2a4358968593c0e23c69c39505f",
+          "sha256": "ff2b896a2ecb8a3704d0a2c368c1caae23a76a2fa79d29cd87b14e55d919f3b6",
+          "analysis": "Valid ADSP-BF70x bootstream: 90 checksum-valid blocks plus a 32-byte MESHVERSIONCHECK trailer. Contains Mesh_Intercom_3.0.dxe and Speex CELP/jitter-buffer strings."
+        }
+      ]
+    },
+    {
+      "hardware": "SP113 (30K-03, 30K-03D)",
+      "version": "4.5.1-build0",
+      "url": "https://firmware.sena.com/senabluetoothmanager/30K-v4.5.1-build0.img",
+      "path": "firmware/30K-v4.5.1-build0.img",
+      "bytes": 7409622,
+      "sha256": "736b07791e3768ec679ea8664b07cd29412c2c8f5d4e5ed1536c4a567125cf76",
+      "components": [
+        {
+          "name": "30K.img",
+          "bytes": 1061566,
+          "md5": "5bf04a7983732fe70ac298660386b3a5",
+          "sha256": "8264d3baa51eb919d8f98f5d797dad4b752c32f2f06815970e5c59ba9b8de916"
+        },
+        {
+          "name": "vp.bin",
+          "bytes": 5211712,
+          "md5": "8738c341c8fd2b21070f3cf7511ee2e4",
+          "sha256": "6cfe0341c2ae6bd7d892df44d54b622bd50aa146108a93eee9e6a9e1abd1bd20"
+        },
+        {
+          "name": "Submesh_v0.5b0.bin",
+          "bytes": 1135276,
+          "md5": "e86a93198829208f025f4d30f6aa60d8",
+          "sha256": "825e806ee87373a749a66766ac3ef9b1c7601fcc1e32b8dcd2fa1ef09f5ac7cf"
+        }
+      ]
+    }
+  ],
+  "integrity": "Each component MD5 was read from its image container and independently verified after extraction."
+}

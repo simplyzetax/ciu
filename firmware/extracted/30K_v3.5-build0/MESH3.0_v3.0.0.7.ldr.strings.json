@@ -1,0 +1,806 @@
+[
+  {
+    "offset": "0x3c",
+    "text": "Mesh_Intercom_3.0.dxe"
+  },
+  {
+    "offset": "0x1c1",
+    "text": "2\"2(280"
+  },
+  {
+    "offset": "0x306",
+    "text": "W0bd!`"
+  },
+  {
+    "offset": "0x112f",
+    "text": "P!`MZ2"
+  },
+  {
+    "offset": "0x1183",
+    "text": "`jU/P2"
+  },
+  {
+    "offset": "0x13e2",
+    "text": "@hQZ!l"
+  },
+  {
+    "offset": "0x1993",
+    "text": "OQPiPqM"
+  },
+  {
+    "offset": "0x1cb6",
+    "text": ";)W0Bd0"
+  },
+  {
+    "offset": "0x222f",
+    "text": "EI^JZH"
+  },
+  {
+    "offset": "0x2d4b",
+    "text": "OQPyPqM"
+  },
+  {
+    "offset": "0x2ed4",
+    "text": "E4U2U4M4X4"
+  },
+  {
+    "offset": "0x318c",
+    "text": "yPpMqM"
+  },
+  {
+    "offset": "0x3980",
+    "text": "\"2(2:000"
+  },
+  {
+    "offset": "0x4241",
+    "text": "`aRQTLP"
+  },
+  {
+    "offset": "0x530a",
+    "text": "\"|80/2"
+  },
+  {
+    "offset": "0x5862",
+    "text": "(2\"010"
+  },
+  {
+    "offset": "0x6333",
+    "text": "oa^Y4q"
+  },
+  {
+    "offset": "0x76ea",
+    "text": "10:0 0"
+  },
+  {
+    "offset": "0x7f5a",
+    "text": "2*O0%2"
+  },
+  {
+    "offset": "0x80e8",
+    "text": "G0@dg0"
+  },
+  {
+    "offset": "0x8648",
+    "text": "9020yC"
+  },
+  {
+    "offset": "0x969f",
+    "text": "2@OJ\\I"
+  },
+  {
+    "offset": "0xa386",
+    "text": "J2rlA2al `"
+  },
+  {
+    "offset": "0xa3be",
+    "text": "'Q,2nQ"
+  },
+  {
+    "offset": "0xa446",
+    "text": ",XpX@C"
+  },
+  {
+    "offset": "0xa458",
+    "text": "<Y5X@C"
+  },
+  {
+    "offset": "0xae48",
+    "text": "y`HU0`"
+  },
+  {
+    "offset": "0xb44c",
+    "text": "I-W0Bd"
+  },
+  {
+    "offset": "0xbb5b",
+    "text": "0aZA0I"
+  },
+  {
+    "offset": "0xbc91",
+    "text": "0YZA0K"
+  },
+  {
+    "offset": "0xbfee",
+    "text": "00\"ig0)Z"
+  },
+  {
+    "offset": "0xc0a5",
+    "text": "2W0Bdya"
+  },
+  {
+    "offset": "0xc18a",
+    "text": "00W2g0)Z"
+  },
+  {
+    "offset": "0xc245",
+    "text": "2W0Bdya"
+  },
+  {
+    "offset": "0xcb1b",
+    "text": "P Z0`8"
+  },
+  {
+    "offset": "0xcc23",
+    "text": "2G2@o\""
+  },
+  {
+    "offset": "0xd032",
+    "text": " l!l%l?"
+  },
+  {
+    "offset": "0xd14f",
+    "text": "2G2@o\""
+  },
+  {
+    "offset": "0xdafb",
+    "text": "dm]h[("
+  },
+  {
+    "offset": "0xdf6f",
+    "text": "DAZKZ#o"
+  },
+  {
+    "offset": "0xe04f",
+    "text": "DAZKZ#o"
+  },
+  {
+    "offset": "0xeabe",
+    "text": ")000D2"
+  },
+  {
+    "offset": "0xec86",
+    "text": "Fo9000"
+  },
+  {
+    "offset": "0xf062",
+    "text": "90 0#2"
+  },
+  {
+    "offset": "0xfd4c",
+    "text": "W0bdF01a"
+  },
+  {
+    "offset": "0x1004a",
+    "text": "cdF0'a"
+  },
+  {
+    "offset": "0x10d96",
+    "text": ";`YT)J"
+  },
+  {
+    "offset": "0x10de1",
+    "text": "BN0c`YP"
+  },
+  {
+    "offset": "0x10eef",
+    "text": "2J2 2*"
+  },
+  {
+    "offset": "0x10fb8",
+    "text": "Q0N0fa"
+  },
+  {
+    "offset": "0x110f0",
+    "text": ")29000"
+  },
+  {
+    "offset": "0x11106",
+    "text": ";`YT]U"
+  },
+  {
+    "offset": "0x1113a",
+    "text": "UYMZjC"
+  },
+  {
+    "offset": "0x116d8",
+    "text": "^0@aCP"
+  },
+  {
+    "offset": "0x11c2a",
+    "text": "^0ga{Q"
+  },
+  {
+    "offset": "0x11ff8",
+    "text": "qiNZI0"
+  },
+  {
+    "offset": "0x12034",
+    "text": "qiNZI0"
+  },
+  {
+    "offset": "0x12a0c",
+    "text": "w0o0fd"
+  },
+  {
+    "offset": "0x12c4a",
+    "text": "w0o0fd"
+  },
+  {
+    "offset": "0x13597",
+    "text": "0O0ad!d"
+  },
+  {
+    "offset": "0x13724",
+    "text": "LZQZAZKZq"
+  },
+  {
+    "offset": "0x13a0a",
+    "text": "90(220D"
+  },
+  {
+    "offset": "0x13a3d",
+    "text": "`K`Q`J"
+  },
+  {
+    "offset": "0x13ad4",
+    "text": "D0:0Bd"
+  },
+  {
+    "offset": "0x13e00",
+    "text": "(2fo#`:"
+  },
+  {
+    "offset": "0x13f13",
+    "text": "TYQ_0cf"
+  },
+  {
+    "offset": "0x1421a",
+    "text": "HPG0pg"
+  },
+  {
+    "offset": "0x14638",
+    "text": "G28o Z"
+  },
+  {
+    "offset": "0x1466e",
+    "text": "G2@oQ2"
+  },
+  {
+    "offset": "0x1478a",
+    "text": "a2G2W2"
+  },
+  {
+    "offset": "0x147d2",
+    "text": "G2@oHZ"
+  },
+  {
+    "offset": "0x14824",
+    "text": "Y2O2Ao"
+  },
+  {
+    "offset": "0x148ad",
+    "text": "2*2(0\"0"
+  },
+  {
+    "offset": "0x14a4e",
+    "text": "90\"2(2"
+  },
+  {
+    "offset": "0x15162",
+    "text": "*0fo/2z"
+  },
+  {
+    "offset": "0x164fa",
+    "text": "W0!lYZ"
+  },
+  {
+    "offset": "0x166ab",
+    "text": "`0080(2"
+  },
+  {
+    "offset": "0x16b79",
+    "text": "0W0bdA`"
+  },
+  {
+    "offset": "0x16b85",
+    "text": "0W0Bd!`"
+  },
+  {
+    "offset": "0x17640",
+    "text": "o`Eh70"
+  },
+  {
+    "offset": "0x17c37",
+    "text": "T`OAVP`"
+  },
+  {
+    "offset": "0x17ebc",
+    "text": "0123456789abcdef"
+  },
+  {
+    "offset": "0x17ed0",
+    "text": "0123456789ABCDEF"
+  },
+  {
+    "offset": "0x17ee8",
+    "text": "diouxX"
+  },
+  {
+    "offset": "0x1802c",
+    "text": "(null)"
+  },
+  {
+    "offset": "0x18ed2",
+    "text": "&\"( .+:+"
+  },
+  {
+    "offset": "0x18ee8",
+    "text": "=5/15K"
+  },
+  {
+    "offset": "0x18efb",
+    "text": "BZHUDJ4"
+  },
+  {
+    "offset": "0x18f1c",
+    "text": ";;IA,(GHRSbXY<"
+  },
+  {
+    "offset": "0x18f72",
+    "text": " 4D@E;A-"
+  },
+  {
+    "offset": "0x18f9b",
+    "text": "$8Laioa"
+  },
+  {
+    "offset": "0x18fc2",
+    "text": ".HTeu{{j"
+  },
+  {
+    "offset": "0x18fd8",
+    "text": "RGVPUJ"
+  },
+  {
+    "offset": "0x19028",
+    "text": "BeS?=%"
+  },
+  {
+    "offset": "0x1905e",
+    "text": "1M2Aru|vs`Z="
+  },
+  {
+    "offset": "0x19078",
+    "text": "(/#(7&"
+  },
+  {
+    "offset": "0x190ac",
+    "text": "93J32.D@A4?7A+"
+  },
+  {
+    "offset": "0x190db",
+    "text": "'23ERab"
+  },
+  {
+    "offset": "0x19102",
+    "text": ";[iieWT>"
+  },
+  {
+    "offset": "0x19680",
+    "text": "narrowband"
+  },
+  {
+    "offset": "0x19b00",
+    "text": "wideband (sub-band CELP)"
+  },
+  {
+    "offset": "0x19bf8",
+    "text": "Fatal (internal) error in %s, line %d: %s"
+  },
+  {
+    "offset": "0x19d0c",
+    "text": "..\\src\\speex\\libspeex\\nb_celp.c"
+  },
+  {
+    "offset": "0x19d2c",
+    "text": "assertion failed: SUBMODE(ltp_quant)"
+  },
+  {
+    "offset": "0x19d54",
+    "text": "assertion failed: SUBMODE(innovation_quant)"
+  },
+  {
+    "offset": "0x19e54",
+    "text": "assertion failed: SUBMODE(ltp_unquant)"
+  },
+  {
+    "offset": "0x19e7c",
+    "text": "assertion failed: SUBMODE(innovation_unquant)"
+  },
+  {
+    "offset": "0x1a5b4",
+    "text": "W25Q32BV"
+  },
+  {
+    "offset": "0x1a5c0",
+    "text": "Winbond"
+  },
+  {
+    "offset": "0x1a841",
+    "text": "P%@Fpg`"
+  },
+  {
+    "offset": "0x1a880",
+    "text": "ftGd$T"
+  },
+  {
+    "offset": "0x1a8d8",
+    "text": "uJTZ7j"
+  },
+  {
+    "offset": "0x1a919",
+    "text": "n6~UNt^"
+  },
+  {
+    "offset": "0x1ace8",
+    "text": "MESHVERSIONCHECK"
+  },
+  {
+    "offset": "0x1adb8",
+    "text": "Mesh_v2.0"
+  },
+  {
+    "offset": "0x1adc4",
+    "text": "00000001"
+  },
+  {
+    "offset": "0x1add0",
+    "text": "CLD HID Mouse"
+  },
+  {
+    "offset": "0x1ae04",
+    "text": "Sena Technologies, Inc."
+  },
+  {
+    "offset": "0x1b3b7",
+    "text": "<'6/676?6"
+  },
+  {
+    "offset": "0x1b4d7",
+    "text": "08`1`h#"
+  },
+  {
+    "offset": "0x1b657",
+    "text": "J@`C/!"
+  },
+  {
+    "offset": "0x1b69c",
+    "text": "80 2/IJ"
+  },
+  {
+    "offset": "0x1bd10",
+    "text": "1`[/9`Y/1"
+  },
+  {
+    "offset": "0x1c468",
+    "text": ")2~P!2"
+  },
+  {
+    "offset": "0x1c849",
+    "text": "0;d[CAd"
+  },
+  {
+    "offset": "0x1c859",
+    "text": "0Cd[CHd"
+  },
+  {
+    "offset": "0x1d8f3",
+    "text": "\\D2tlX2cl"
+  },
+  {
+    "offset": "0x1de18",
+    "text": "OVYVQT"
+  },
+  {
+    "offset": "0x1de5c",
+    "text": "KVQViL"
+  },
+  {
+    "offset": "0x1e91b",
+    "text": "2i25l/"
+  },
+  {
+    "offset": "0x1ffaa",
+    "text": "(2foEa104"
+  },
+  {
+    "offset": "0x2002e",
+    "text": "M2El%^"
+  },
+  {
+    "offset": "0x20a08",
+    "text": "W0Bd `"
+  },
+  {
+    "offset": "0x2138a",
+    "text": "J^I0LRiT1"
+  },
+  {
+    "offset": "0x21400",
+    "text": "H^I0LRiT1"
+  },
+  {
+    "offset": "0x214a2",
+    "text": "L^I0LRiT!2aZ"
+  },
+  {
+    "offset": "0x217bc",
+    "text": "!dYRB4"
+  },
+  {
+    "offset": "0x21919",
+    "text": "@jQlQ-2"
+  },
+  {
+    "offset": "0x21bb5",
+    "text": "2BRY4H4T4"
+  },
+  {
+    "offset": "0x21c70",
+    "text": "M^I0MRYT"
+  },
+  {
+    "offset": "0x21f40",
+    "text": "MQoQNP"
+  },
+  {
+    "offset": "0x22584",
+    "text": "yPiPiM"
+  },
+  {
+    "offset": "0x225f6",
+    "text": "J4U2\"l"
+  },
+  {
+    "offset": "0x226c5",
+    "text": "D!h#l1"
+  },
+  {
+    "offset": "0x227c1",
+    "text": "C!4q4i"
+  },
+  {
+    "offset": "0x22994",
+    "text": "JP9M*`"
+  },
+  {
+    "offset": "0x22abb",
+    "text": "!|M&Aq"
+  },
+  {
+    "offset": "0x23161",
+    "text": "g]2<`>`"
+  },
+  {
+    "offset": "0x23287",
+    "text": "0#A(A^P"
+  },
+  {
+    "offset": "0x23a4c",
+    "text": "h2T2]2#D"
+  },
+  {
+    "offset": "0x23c4a",
+    "text": ",UcQuQ"
+  },
+  {
+    "offset": "0x23c85",
+    "text": "EYZaZAZ"
+  },
+  {
+    "offset": "0x23ca1",
+    "text": "oE]D4YZ"
+  },
+  {
+    "offset": "0x23f82",
+    "text": "YPqMJP"
+  },
+  {
+    "offset": "0x24145",
+    "text": "d$`LS}Uq"
+  },
+  {
+    "offset": "0x24190",
+    "text": "wP\"D!D"
+  },
+  {
+    "offset": "0x241c0",
+    "text": " 4A4ad"
+  },
+  {
+    "offset": "0x243c2",
+    "text": "A0 S#d"
+  },
+  {
+    "offset": "0x24421",
+    "text": "oC4\"h+["
+  },
+  {
+    "offset": "0x24434",
+    "text": "j2%lBliZ"
+  },
+  {
+    "offset": "0x2471b",
+    "text": "1wP0M "
+  },
+  {
+    "offset": "0x24fb6",
+    "text": "@0!D!D<"
+  },
+  {
+    "offset": "0x251c4",
+    "text": "A4a2F["
+  },
+  {
+    "offset": "0x260a3",
+    "text": "2UlE2P2"
+  },
+  {
+    "offset": "0x260de",
+    "text": "E2I^JZ"
+  },
+  {
+    "offset": "0x26106",
+    "text": "10*0 2.2"
+  },
+  {
+    "offset": "0x2636e",
+    "text": "10*0 2.2"
+  },
+  {
+    "offset": "0x2651a",
+    "text": "90'2(2\"0"
+  },
+  {
+    "offset": "0x2670b",
+    "text": "o!`8020"
+  },
+  {
+    "offset": "0x27351",
+    "text": "T@Cfl8@0"
+  },
+  {
+    "offset": "0x27460",
+    "text": "Feb 15 2015"
+  },
+  {
+    "offset": "0x2746c",
+    "text": "11:16:31"
+  },
+  {
+    "offset": "0x2747a",
+    "text": "Closed Loop Design BF707 HID Library v.%s build date: %s %s"
+  },
+  {
+    "offset": "0x27565",
+    "text": "[0;30m"
+  },
+  {
+    "offset": "0x2756d",
+    "text": "[0;31m"
+  },
+  {
+    "offset": "0x27575",
+    "text": "[0;32m"
+  },
+  {
+    "offset": "0x2757d",
+    "text": "[0;33m"
+  },
+  {
+    "offset": "0x27585",
+    "text": "[0;34m"
+  },
+  {
+    "offset": "0x2758d",
+    "text": "[0;35m"
+  },
+  {
+    "offset": "0x27595",
+    "text": "[0;36m"
+  },
+  {
+    "offset": "0x2759d",
+    "text": "[0;37m"
+  },
+  {
+    "offset": "0x275ec",
+    "text": "Console discarded msgs: %d "
+  },
+  {
+    "offset": "0x276c0",
+    "text": "HID Interrupt IN endpoint parameters are required"
+  },
+  {
+    "offset": "0x276f4",
+    "text": "HID Interrupt IN endpoint number invalid (0 < endpoint num < 12)"
+  },
+  {
+    "offset": "0x27738",
+    "text": "HID Interrupt OUT endpoint number invalid (0 < endpoint num < 12)"
+  },
+  {
+    "offset": "0x2777c",
+    "text": "CLD HID library is already initialized"
+  },
+  {
+    "offset": "0x277a8",
+    "text": "Interrupt IN timeout"
+  },
+  {
+    "offset": "0x277c0",
+    "text": "Interrupt OUT timeout"
+  },
+  {
+    "offset": "0x277d8",
+    "text": "HID Set_Report 0x%2.2x"
+  },
+  {
+    "offset": "0x277f4",
+    "text": "Error: Transfer params buffer set to NULL"
+  },
+  {
+    "offset": "0x27830",
+    "text": "HID Get_Report 0x%2.2x"
+  },
+  {
+    "offset": "0x27888",
+    "text": "Error: Interrupt out data buffer set to NULL"
+  },
+  {
+    "offset": "0x278b8",
+    "text": "Error: Interrupt OUT data buffer set to NULL"
+  },
+  {
+    "offset": "0x27908",
+    "text": "CLD Lib client %d init error, halting"
+  },
+  {
+    "offset": "0x27aa8",
+    "text": "USB cable connected"
+  },
+  {
+    "offset": "0x27ac0",
+    "text": "USB cable disconnected"
+  },
+  {
+    "offset": "0x27b40",
+    "text": "USB Bus Reset"
+  },
+  {
+    "offset": "0x27c80",
+    "text": "Fatal (internal) error in %s, line %d: %s"
+  },
+  {
+    "offset": "0x27cac",
+    "text": "assertion failed: pos <= tb->filled && pos < MAX_TIMINGS"
+  },
+  {
+    "offset": "0x27ce8",
+    "text": "..\\src\\speex\\libspeexdsp\\jitter.c"
+  },
+  {
+    "offset": "0x28b3c",
+    "text": "MESHVERSIONCHECK"
+  }
+]
