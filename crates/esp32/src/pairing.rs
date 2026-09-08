@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+
 use anyhow::Context;
 use ciu_core::iec::protocol::{DeviceId, PairAck, PairHello, PairingMessage, WireMessage};
 
@@ -13,7 +15,7 @@ use crate::{
 pub fn pair_as_goggle<Io>(
     wire: &mut Wire<Io>,
     my_mac: [u8; 6],
-    state: &mut SavedState,
+    state: &Mutex<SavedState>,
     store: &mut StateStore,
 ) -> anyhow::Result<[u8; 6]>
 where
@@ -29,8 +31,12 @@ where
         anyhow::bail!("expected Helmet, got {:?}", hello.device);
     }
 
-    state.set_peer(DeviceId::Helmet, hello.mac);
-    store.save(state).context("persisting helmet peer")?;
+    {
+        let mut state = state.lock().expect("saved state mutex poisoned");
+
+        state.set_peer(DeviceId::Helmet, hello.mac);
+        store.save(&state).context("persisting helmet peer")?;
+    }
 
     wire.send_pairing(&PairingMessage::Ack(PairAck {
         device: DeviceId::Goggle,
@@ -48,7 +54,7 @@ where
 pub fn pair_as_helmet<Io>(
     wire: &mut Wire<Io>,
     my_mac: [u8; 6],
-    state: &mut SavedState,
+    state: &Mutex<SavedState>,
     store: &mut StateStore,
 ) -> anyhow::Result<[u8; 6]>
 where
@@ -70,8 +76,10 @@ where
         anyhow::bail!("expected Goggle, got {:?}", ack.device);
     }
 
+    let mut state = state.lock().expect("saved state mutex poisoned");
+
     state.set_peer(DeviceId::Goggle, ack.mac);
-    store.save(state).context("persisting goggle peer")?;
+    store.save(&state).context("persisting goggle peer")?;
 
     Ok(ack.mac)
 }

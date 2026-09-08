@@ -49,6 +49,13 @@ fn run() -> anyhow::Result<()> {
 
     let radio = esp_idf_svc::espnow::EspNow::take()?;
     let esp_now = Arc::new(ciu_esp32::espnow::EspNow::new(radio));
+    {
+        let state = saved_state.lock().expect("saved state mutex poisoned");
+
+        for peer in &state.peers {
+            esp_now.add_peer(peer.mac)?;
+        }
+    }
 
     esp_now.on_receive(
         Arc::clone(&saved_state),
@@ -65,6 +72,7 @@ fn run() -> anyhow::Result<()> {
 
     let pairing_saved_state = Arc::clone(&saved_state);
     let pairing_runtime_state = Arc::clone(&runtime_state);
+    let pairing_esp_now = Arc::clone(&esp_now);
 
     let _pairing_thread = std::thread::Builder::new()
         .name("pairing".into())
@@ -73,26 +81,25 @@ fn run() -> anyhow::Result<()> {
             loop {
                 detect.wait_for_attach();
 
-                let result = {
-                    let mut state = pairing_saved_state
-                        .lock()
-                        .expect("saved state mutex poisoned");
-
-                    pair_as_helmet(&mut wire, my_mac, &mut state, &mut store)
-                };
+                let result = pair_as_helmet(&mut wire, my_mac, &pairing_saved_state, &mut store);
 
                 match result {
                     Ok(goggle_mac) => {
-                        led.set_high().ok();
+                        if let Err(error) = pairing_esp_now.add_peer(goggle_mac) {
+                            println!("Failed to register goggle with ESP-NOW: {error:#}");
+                            led.set_low().ok();
+                        } else {
+                            led.set_high().ok();
 
-                        println!("Paired with goggle {:02X?}", goggle_mac);
+                            println!("Paired with goggle {:02X?}", goggle_mac);
 
-                        let mut runtime = pairing_runtime_state
-                            .lock()
-                            .expect("runtime state mutex poisoned");
+                            let mut runtime = pairing_runtime_state
+                                .lock()
+                                .expect("runtime state mutex poisoned");
 
-                        if runtime.peer(DeviceId::Goggle).is_none() {
-                            runtime.peers.push(PeerRuntime::new(DeviceId::Goggle));
+                            if runtime.peer(DeviceId::Goggle).is_none() {
+                                runtime.peers.push(PeerRuntime::new(DeviceId::Goggle));
+                            }
                         }
                     }
 
@@ -106,7 +113,23 @@ fn run() -> anyhow::Result<()> {
             }
         })?;
 
+    let mut ping_sequence = 0u16;
+
     loop {
+        let goggle_mac = saved_state
+            .lock()
+            .expect("saved state mutex poisoned")
+            .peer(DeviceId::Goggle)
+            .map(|peer| peer.mac);
+
+        if let Some(goggle_mac) = goggle_mac {
+            if let Err(error) = esp_now.send_ping(goggle_mac, ping_sequence) {
+                println!("Failed to send Ping to goggle: {error:#}");
+            }
+
+            ping_sequence = ping_sequence.wrapping_add(1);
+        }
+
         FreeRtos::delay_ms(500);
     }
 }

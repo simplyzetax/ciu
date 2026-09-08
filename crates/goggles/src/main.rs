@@ -48,6 +48,13 @@ fn run() -> anyhow::Result<()> {
 
     let radio = esp_idf_svc::espnow::EspNow::take()?;
     let esp_now = Arc::new(ciu_esp32::espnow::EspNow::new(radio));
+    {
+        let state = saved_state.lock().expect("saved state mutex poisoned");
+
+        for peer in &state.peers {
+            esp_now.add_peer(peer.mac)?;
+        }
+    }
 
     esp_now.on_receive(
         Arc::clone(&saved_state),
@@ -62,27 +69,29 @@ fn run() -> anyhow::Result<()> {
 
     let pairing_saved_state = Arc::clone(&saved_state);
     let pairing_runtime_state = Arc::clone(&runtime_state);
+    let pairing_esp_now = Arc::clone(&esp_now);
 
     let _pairing_thread = std::thread::Builder::new()
         .name("pairing".into())
         .stack_size(PAIRING_STACK_SIZE)
         .spawn(move || {
             loop {
-                let mut state = pairing_saved_state
-                    .lock()
-                    .expect("saved state mutex poisoned");
-
-                match pair_as_goggle(&mut wire, my_mac, &mut state, &mut store) {
+                match pair_as_goggle(&mut wire, my_mac, &pairing_saved_state, &mut store) {
                     Ok(helmet_mac) => {
-                        println!("Paired with helmet {:02X?}", helmet_mac);
-                        led.set_high().ok();
+                        if let Err(error) = pairing_esp_now.add_peer(helmet_mac) {
+                            println!("Failed to register helmet with ESP-NOW: {error:#}");
+                            led.set_low().ok();
+                        } else {
+                            println!("Paired with helmet {:02X?}", helmet_mac);
+                            led.set_high().ok();
 
-                        let mut runtime = pairing_runtime_state
-                            .lock()
-                            .expect("runtime state mutex poisoned");
+                            let mut runtime = pairing_runtime_state
+                                .lock()
+                                .expect("runtime state mutex poisoned");
 
-                        if runtime.peer(DeviceId::Helmet).is_none() {
-                            runtime.peers.push(PeerRuntime::new(DeviceId::Helmet));
+                            if runtime.peer(DeviceId::Helmet).is_none() {
+                                runtime.peers.push(PeerRuntime::new(DeviceId::Helmet));
+                            }
                         }
                     }
 
@@ -102,7 +111,23 @@ fn run() -> anyhow::Result<()> {
             }
         })?;
 
+    let mut ping_sequence = 0u16;
+
     loop {
+        let helmet_mac = saved_state
+            .lock()
+            .expect("saved state mutex poisoned")
+            .peer(DeviceId::Helmet)
+            .map(|peer| peer.mac);
+
+        if let Some(helmet_mac) = helmet_mac {
+            if let Err(error) = esp_now.send_ping(helmet_mac, ping_sequence) {
+                println!("Failed to send Ping to helmet: {error:#}");
+            }
+
+            ping_sequence = ping_sequence.wrapping_add(1);
+        }
+
         FreeRtos::delay_ms(500);
     }
 }
