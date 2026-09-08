@@ -1,3 +1,17 @@
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum ProtocolError {
+    #[error("output buffer is too small")]
+    BufferTooSmall,
+
+    #[error("invalid message type: {0}")]
+    InvalidMessageType(u8),
+
+    #[error("invalid payload")]
+    InvalidPayload,
+}
+
 macro_rules! messages {
     (
         $(
@@ -27,6 +41,14 @@ macro_rules! messages {
                     )*
                 }
             }
+
+            pub fn encode(&self, out: &mut [u8]) -> Result<usize, ProtocolError> {
+                    // ...
+                }
+
+                pub fn decode(data: &[u8]) -> Result<Self, ProtocolError> {
+                    // ...
+                }
         }
     };
 }
