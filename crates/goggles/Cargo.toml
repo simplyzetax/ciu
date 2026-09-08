@@ -11,6 +11,7 @@ esp-idf-hal = "0.46.2"
 esp-idf-svc = { version = "0.52.1", features = ["binstart"] }
 
 ciu-esp32 = { path = "../esp32" }
+ciu-core = { path = "../core" }
 
 [build-dependencies]
 embuild = "0.33.5"

@@ -235,6 +235,7 @@ name = "ciu-goggles"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "ciu-core",
  "ciu-esp32",
  "embuild",
  "esp-idf-hal",
