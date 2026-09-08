@@ -1,5 +1,7 @@
 # Sena 30K Mesh 3.0 Firmware and ESP32 Feasibility
 
+> **Status: superseded first-pass report.** The SP113 container, Mesh 3 frame format, packet subtypes, routing, protected record, codec packing, and ESP32-C6 requirements were subsequently recovered. Use [Sena 30K Mesh Protocol Static Analysis — 2026-09-08](sena-30k-mesh-protocol-static-analysis-2026-09-08.md) for current implementation evidence. The conclusions below are retained only as the pre-decompression baseline.
+
 ## Conclusion
 
 **A regular ESP32 plus antenna cannot behave as a native Sena Mesh 3.0 node.** It lacks the required O-QPSK/802.15.4-class radio PHY. An antenna changes range, not modulation or packet decoding.
