@@ -198,6 +198,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ciu-bike"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "ciu-esp32",
+ "embuild",
+ "esp-idf-hal",
+ "esp-idf-svc",
+ "log",
+]
+
+[[package]]
 name = "ciu-core"
 version = "0.1.0"
 dependencies = [
