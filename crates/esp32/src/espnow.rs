@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use esp_idf_svc::espnow::{EspNow as EspIdfEspNow, PeerInfo};
 
-use ciu_core::iec::protocol::{Message, Ping, Pong};
+use ciu_core::iec::protocol::{DeviceId, Message, Ping, Pong};
 
 use crate::saved_state::{RuntimeState, SavedState};
 
@@ -53,11 +53,13 @@ impl EspNow {
 
     /// Registers a callback for normal CIU messages received over ESP-NOW.
     ///
-    /// Invalid packets, including pairing packets, are ignored.
+    /// Invalid packets, including pairing packets, are ignored. Ping and Pong
+    /// are handled here; all application messages are passed to `on_message`.
     pub fn on_receive(
         self: &Arc<Self>,
         saved_state: Arc<Mutex<SavedState>>,
         runtime_state: Arc<Mutex<RuntimeState>>,
+        mut on_message: impl FnMut(DeviceId, Message) + Send + 'static,
     ) -> anyhow::Result<()> {
         let esp_now = Arc::clone(self);
 
@@ -104,9 +106,7 @@ impl EspNow {
                     println!("Pong from {:?}, sequence {}", device, pong.sequence);
                 }
 
-                other => {
-                    println!("ESP-NOW RX from {:?}: {:?}", device, other);
-                }
+                other => on_message(device, other),
             }
         })?;
 

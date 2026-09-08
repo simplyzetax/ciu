@@ -50,7 +50,13 @@ fn run() -> anyhow::Result<()> {
     let radio = esp_idf_svc::espnow::EspNow::take()?;
     let esp_now = Arc::new(ciu_esp32::espnow::EspNow::new(radio));
 
-    esp_now.on_receive(Arc::clone(&saved_state), Arc::clone(&runtime_state))?;
+    esp_now.on_receive(
+        Arc::clone(&saved_state),
+        Arc::clone(&runtime_state),
+        |device, message| {
+            println!("Helmet ESP-NOW RX from {:?}: {:?}", device, message);
+        },
+    )?;
 
     let io = GpioWireIo::new(peripherals.pins.gpio4)?;
     let mut wire = Wire::new(io);
