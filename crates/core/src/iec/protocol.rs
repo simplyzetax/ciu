@@ -1,3 +1,11 @@
+//! Each packet starts with one byte identifying the message type.
+//! The remaining bytes hold the value:
+//!
+//! - Throttle: `[1, amount]`
+//! - ABS: `[2, mode]`, where 1 = Street and 2 = Supermoto
+//! - RPM: `[3, low_byte, high_byte]` (little-endian)
+//! - Clutch: `[4, engaged]`, where 0 = false and 1 = true
+
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -12,50 +20,29 @@ pub enum ProtocolError {
     InvalidPayload,
 }
 
-macro_rules! messages {
-    (
-        $(
-            $name:ident = $id:literal => $payload:ty
-        ),* $(,)?
-    ) => {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-        #[repr(u8)]
-        pub enum MessageType {
-            $(
-                $name = $id,
-            )*
-        }
+/// The numeric IDs sent in the first byte of a packet.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum MessageType {
+    Throttle = 1,
+    ABS = 2,
+    Rpm = 3,
+    Clutch = 4,
+}
 
-        impl TryFrom<u8> for MessageType {
-            type Error = ProtocolError;
+// TryFrom converts a byte into a MessageType, or returns an error for an unknown ID.
+impl TryFrom<u8> for MessageType {
+    type Error = ProtocolError;
 
-            fn try_from(value: u8) -> Result<Self, Self::Error> {
-                match value {
-                    $(
-                        $id => Ok(Self::$name),
-                    )*
-                    _ => Err(ProtocolError::InvalidMessageType(value)),
-                }
-            }
+    fn try_from(value: u8) -> Result<Self, ProtocolError> {
+        match value {
+            1 => Ok(MessageType::Throttle),
+            2 => Ok(MessageType::ABS),
+            3 => Ok(MessageType::Rpm),
+            4 => Ok(MessageType::Clutch),
+            _ => Err(ProtocolError::InvalidMessageType(value)),
         }
-
-        #[derive(Debug, Clone, Copy, PartialEq)]
-        pub enum Message {
-            $(
-                $name($payload),
-            )*
-        }
-
-        impl Message {
-            pub fn message_type(&self) -> MessageType {
-                match self {
-                    $(
-                        Self::$name(_) => MessageType::$name,
-                    )*
-                }
-            }
-        }
-    };
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -80,46 +67,98 @@ pub struct Clutch {
     pub engaged: bool,
 }
 
-messages! {
-    Throttle = 1 => Throttle,
-    ABS      = 2 => ABSMode,
-    Rpm      = 3 => Rpm,
-    Clutch   = 4 => Clutch,
+/// A message contains both its type and the value to send.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Message {
+    Throttle(Throttle),
+    ABS(ABSMode),
+    Rpm(Rpm),
+    Clutch(Clutch),
 }
 
 impl Message {
-    /// Encodes a type byte followed by its payload. RPM is little-endian;
-    /// clutch is 0 or 1. Returns the number of bytes written.
-    pub fn encode(&self, out: &mut [u8]) -> Result<usize, ProtocolError> {
-        let len = match self {
-            Self::Rpm(_) => 3,
-            _ => 2,
-        };
-        let out = out.get_mut(..len).ok_or(ProtocolError::BufferTooSmall)?;
-        out[0] = self.message_type() as u8;
+    pub fn message_type(&self) -> MessageType {
         match self {
-            Self::Throttle(throttle) => out[1] = throttle.amount,
-            Self::ABS(mode) => out[1] = *mode as u8,
-            Self::Rpm(rpm) => out[1..].copy_from_slice(&rpm.amount.to_le_bytes()),
-            Self::Clutch(clutch) => out[1] = u8::from(clutch.engaged),
+            Message::Throttle(_) => MessageType::Throttle,
+            Message::ABS(_) => MessageType::ABS,
+            Message::Rpm(_) => MessageType::Rpm,
+            Message::Clutch(_) => MessageType::Clutch,
         }
-        Ok(len)
     }
 
-    /// Decodes exactly one message, rejecting truncated or trailing payload bytes.
+    /// Writes the packet into the provided buffer and returns its length.
+    pub fn encode(&self, buffer: &mut [u8]) -> Result<usize, ProtocolError> {
+        // One byte for the type, plus one byte for the value (two for RPM).
+        let packet_length = match self {
+            Message::Rpm(_) => 3,
+            _ => 2,
+        };
+
+        // Check before writing so an error leaves the buffer unchanged.
+        if buffer.len() < packet_length {
+            return Err(ProtocolError::BufferTooSmall);
+        }
+
+        buffer[0] = self.message_type() as u8;
+        match self {
+            Message::Throttle(throttle) => buffer[1] = throttle.amount,
+            Message::ABS(mode) => buffer[1] = *mode as u8,
+            Message::Rpm(rpm) => {
+                let bytes = rpm.amount.to_le_bytes();
+                buffer[1] = bytes[0];
+                buffer[2] = bytes[1];
+            }
+            Message::Clutch(clutch) => {
+                buffer[1] = if clutch.engaged { 1 } else { 0 };
+            }
+        }
+
+        Ok(packet_length)
+    }
+
+    /// Reads exactly one packet. Missing or extra bytes are errors.
     pub fn decode(data: &[u8]) -> Result<Self, ProtocolError> {
-        let (&kind, payload) = data.split_first().ok_or(ProtocolError::InvalidPayload)?;
-        match (MessageType::try_from(kind)?, payload) {
-            (MessageType::Throttle, &[amount]) => Ok(Self::Throttle(Throttle { amount })),
-            (MessageType::ABS, &[1]) => Ok(Self::ABS(ABSMode::Street)),
-            (MessageType::ABS, &[2]) => Ok(Self::ABS(ABSMode::Supermoto)),
-            (MessageType::Rpm, &[lo, hi]) => Ok(Self::Rpm(Rpm {
-                amount: u16::from_le_bytes([lo, hi]),
-            })),
-            (MessageType::Clutch, &[engaged @ 0..=1]) => Ok(Self::Clutch(Clutch {
-                engaged: engaged != 0,
-            })),
-            _ => Err(ProtocolError::InvalidPayload),
+        if data.is_empty() {
+            return Err(ProtocolError::InvalidPayload);
+        }
+
+        // The ? returns early if the first byte is not a known message type.
+        let message_type = MessageType::try_from(data[0])?;
+        let expected_length = match message_type {
+            MessageType::Rpm => 3,
+            _ => 2,
+        };
+
+        // Validate the length before accessing the value bytes below.
+        if data.len() != expected_length {
+            return Err(ProtocolError::InvalidPayload);
+        }
+
+        match message_type {
+            MessageType::Throttle => {
+                let throttle = Throttle { amount: data[1] };
+                Ok(Message::Throttle(throttle))
+            }
+            MessageType::ABS => {
+                let mode = match data[1] {
+                    1 => ABSMode::Street,
+                    2 => ABSMode::Supermoto,
+                    _ => return Err(ProtocolError::InvalidPayload),
+                };
+                Ok(Message::ABS(mode))
+            }
+            MessageType::Rpm => {
+                let amount = u16::from_le_bytes([data[1], data[2]]);
+                Ok(Message::Rpm(Rpm { amount }))
+            }
+            MessageType::Clutch => {
+                let engaged = match data[1] {
+                    0 => false,
+                    1 => true,
+                    _ => return Err(ProtocolError::InvalidPayload),
+                };
+                Ok(Message::Clutch(Clutch { engaged }))
+            }
         }
     }
 }
