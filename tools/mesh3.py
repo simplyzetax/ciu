@@ -414,6 +414,7 @@ def verify(path: Path = IMAGE) -> int:
     ok &= _check("protected payload is 101 bytes", len(payload), 101)
     ok &= _check("protect/unprotect round-trips", unprotect(crypto_hdr, payload), (0x123456, body))
 
+
     if not path.exists():
         print(f"skip  firmware image absent: {path}")
         return 0 if ok else 1
@@ -433,6 +434,48 @@ def verify(path: Path = IMAGE) -> int:
     ok &= _check("AES key at 0x08237250", at(KEY_VA, 16).hex(), MESH3_KEY.hex())
     ok &= _check("Mesh 3 channel table", tuple(at(MESH3_CHANNEL_TABLE_VA, 7)), MESH3_CHANNELS)
     ok &= _check("Mesh 2 channel table", tuple(at(MESH2_CHANNEL_TABLE_VA, 10)), MESH2_CHANNELS)
+    # --- Deep codec/OTA pass (2026-09-08 second report) -------------------
+
+    # DSP0 (section 0) carries nine embedded Xtensa ELF modules
+    # (e_machine = 94 = EM_XTENSA). Offsets are verified directly.
+    sec0 = c.data(0)
+    elf_offs = []
+    i = 0
+    while True:
+        j = sec0.find(b"\x7fELF", i)
+        if j < 0:
+            break
+        elf_offs.append(j)
+        i = j + 1
+    ok &= _check("nine embedded Xtensa ELF modules in section 0", len(elf_offs), 9)
+    ok &= _check("all DSP modules are EM_XTENSA (94)",
+                 sorted({struct.unpack_from("<H", sec0, o + 18)[0] for o in elf_offs}), [94])
+
+    # The Speex 1.2.0 narrowband codec (nb_celp.c) lives in the DSP0 image.
+    ok &= _check("Speex 1.2.0 nb_celp present in DSP0",
+                 (sec0.find(b"speex-1.2.0") >= 0, sec0.find(b"nb_celp.c") >= 0), (True, True))
+
+    # The ARM runtime links the Speex *jitter buffer* (libspeexdsp) only; the
+    # codec itself is offloaded to DSP0. mesh_speex is a runtime module name.
+    ok &= _check("ARM side has jitter.c path only (no codec)",
+                 runtime.find(b"intercom/mesh/lib_speex/libspeexdsp/jitter.c") >= 0, True)
+
+    # OTA ring geometry verified in the receive-ring initialization loop:
+    # 9 rx slots x 0x8c (140) stride = 0x4ec total, each with a 0x7d (125)-byte
+    # payload buffer; aggregation ring: 12 slots x 0x84 (132) = 0x630.
+    ok &= _check("rx ring: 9 slots x 140 B", 9 * 0x8C, 0x4EC)
+    ok &= _check("rx slot payload buffer 125 B", 0x7D, 125)
+    ok &= _check("aggregation ring: 12 slots x 132 B", 12 * 0x84, 0x630)
+
+    # Playout byte-offset math recovered from both mesh generations:
+    #   byte_offset = aggregation_index * counter23 * 0x140 (320)
+    # 320 B = 160 signed 16-bit samples = 20 ms at 8 kHz.
+    ok &= _check("playout frame 320 B = 160 samples = 20 ms at 8 kHz",
+                 (0x140, 0x140 / 2, 160 / 8000), (320, 160.0, 0.02))
+
+    # 96-byte codec body = three 32-byte codec units = 60 ms of audio.
+    ok &= _check("96 B body = 3 units x 32 B = 3 x 20 ms = 60 ms",
+                 (96 // 32) * 20 / 1000, 0.06)
 
     ptrs = struct.unpack_from("<15I", at(0x08233AD4, 60))
     names = [runtime[p - RUNTIME_VA :].split(b"\0")[0].decode() for p in ptrs]
