@@ -4,8 +4,9 @@ fn main() -> anyhow::Result<()> {
     esp_idf_svc::sys::link_patches();
 
     let peripherals = Peripherals::take()?;
-
     let mut led = PinDriver::output(peripherals.pins.gpio2)?;
+
+    let _wifi = ciu_esp32::wifi::start(peripherals.modem, ciu_esp32::wifi::WIFI_CHANNEL)?;
 
     loop {
         led.set_high()?;
