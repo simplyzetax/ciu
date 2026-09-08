@@ -201,10 +201,17 @@ dependencies = [
 name = "ciu-core"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "esp-idf-hal",
- "esp-idf-svc",
  "thiserror 2.0.20",
+]
+
+[[package]]
+name = "ciu-esp32"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "ciu-core",
+ "embuild",
+ "esp-idf-svc",
 ]
 
 [[package]]
@@ -212,7 +219,7 @@ name = "ciu-goggles"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "ciu-core",
+ "ciu-esp32",
  "embuild",
  "esp-idf-hal",
  "esp-idf-svc",
@@ -224,7 +231,7 @@ name = "ciu-helmet"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "ciu-core",
+ "ciu-esp32",
  "embuild",
  "esp-idf-hal",
  "esp-idf-svc",

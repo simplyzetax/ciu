@@ -1,4 +1,5 @@
 [workspace]
 resolver = "2"
 
-members = ["crates/core", "crates/goggles", "crates/helmet"]
+members = ["crates/core", "crates/esp32", "crates/goggles", "crates/helmet"]
+default-members = ["crates/core"]

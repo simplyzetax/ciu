@@ -1,5 +1,6 @@
-[build]
-target = "xtensa-esp32-espidf"
+[alias]
+build-esp = "build --workspace --target xtensa-esp32-espidf"
+check-esp = "check --workspace --target xtensa-esp32-espidf"
 
 [target.xtensa-esp32-espidf]
 linker = "ldproxy"

@@ -1,6 +1,6 @@
 use esp_idf_svc::espnow::EspNow as EspIdfEspNow;
 
-use crate::iec::protocol::Message;
+use ciu_core::iec::protocol::Message;
 
 /// Converts our messages to bytes and sends them through ESP-IDF.
 pub struct EspNow {
