@@ -1,25 +1,25 @@
-//! Binary protocol shared by all CIU transports.
+//! Binary protocol shared by CIU devices.
 //!
-//! The protocol is transport-independent:
+//! Normal messages are transport-independent and may be sent over:
 //!
-//! - ESP-NOW sends encoded `Message`s.
-//! - The physical pairing wire sends encoded `Message`s.
+//! - ESP-NOW
+//! - the physical wire
 //!
-//! Every packet starts with one byte identifying the message type.
+//! Pairing messages are different: they may ONLY be sent over the physical
+//! wire. This is enforced by keeping pairing out of `Message` entirely.
+//!
+//! # Normal messages
 //!
 //! - Throttle:   `[1, amount]`
 //! - ABS:        `[2, mode]`
 //! - RPM:        `[3, low_byte, high_byte]`
 //! - Clutch:     `[4, engaged]`
 //! - KillSwitch: `[5, engaged]`
-//! - Pairing:    `[6, pairing_type, device, token...]`
 //!
-//! Pairing types:
+//! # Wire-only pairing messages
 //!
-//! - Hello: `1`
-//! - Ack:   `2`
-//!
-//! Tokens are encoded as little-endian `u64`.
+//! - PairHello: `[6, 1, device, mac...]`
+//! - PairAck:   `[6, 2, device, mac...]`
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -63,7 +63,10 @@ impl TryFrom<u8> for DeviceId {
     }
 }
 
-/// Numeric ID stored in the first byte of every packet.
+/// Numeric ID stored in the first byte of a packet.
+///
+/// Pairing is included here because it exists on the physical wire format,
+/// but it is deliberately not a variant of `Message`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum MessageType {
@@ -100,8 +103,8 @@ impl MessageType {
             Self::Clutch => 2,
             Self::KillSwitch => 2,
 
-            // message type + pairing type + device + u64 token
-            Self::Pairing => 1 + 1 + 1 + 8,
+            // type + pairing type + device + MAC
+            Self::Pairing => 1 + 1 + 1 + 6,
         }
     }
 }
@@ -145,47 +148,9 @@ pub struct KillSwitch {
     pub engaged: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct PairHello {
-    pub device: DeviceId,
-    pub token: u64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct PairAck {
-    pub device: DeviceId,
-    pub token: u64,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u8)]
-pub enum PairingMessageType {
-    Hello = 1,
-    Ack = 2,
-}
-
-impl TryFrom<u8> for PairingMessageType {
-    type Error = ProtocolError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            1 => Ok(Self::Hello),
-            2 => Ok(Self::Ack),
-            _ => Err(ProtocolError::InvalidPairingMessageType(value)),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PairingMessage {
-    Hello(PairHello),
-    Ack(PairAck),
-}
-
-/// A logical CIU protocol message.
+/// A normal CIU message.
 ///
-/// This type is transport-independent. It can be encoded and sent through
-/// ESP-NOW, the physical pairing wire, or any future transport.
+/// These messages may be transported over both ESP-NOW and the physical wire.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Message {
     Throttle(Throttle),
@@ -193,7 +158,6 @@ pub enum Message {
     Rpm(Rpm),
     Clutch(Clutch),
     KillSwitch(KillSwitch),
-    Pairing(PairingMessage),
 }
 
 impl Message {
@@ -204,11 +168,10 @@ impl Message {
             Self::Rpm(_) => MessageType::Rpm,
             Self::Clutch(_) => MessageType::Clutch,
             Self::KillSwitch(_) => MessageType::KillSwitch,
-            Self::Pairing(_) => MessageType::Pairing,
         }
     }
 
-    /// Writes the message into the provided buffer and returns its encoded length.
+    /// Writes a normal message into the provided buffer.
     pub fn encode(&self, buffer: &mut [u8]) -> Result<usize, ProtocolError> {
         let packet_length = self.message_type().encoded_len();
 
@@ -238,36 +201,27 @@ impl Message {
             Self::KillSwitch(kill_switch) => {
                 buffer[1] = u8::from(kill_switch.engaged);
             }
-
-            Self::Pairing(pairing) => {
-                let (pairing_type, device, token) = match pairing {
-                    PairingMessage::Hello(message) => {
-                        (PairingMessageType::Hello, message.device, message.token)
-                    }
-
-                    PairingMessage::Ack(message) => {
-                        (PairingMessageType::Ack, message.device, message.token)
-                    }
-                };
-
-                buffer[1] = pairing_type as u8;
-                buffer[2] = device as u8;
-                buffer[3..11].copy_from_slice(&token.to_le_bytes());
-            }
         }
 
         Ok(packet_length)
     }
 
-    /// Reads exactly one encoded message.
+    /// Decodes a normal message.
     ///
-    /// Missing or extra bytes are rejected.
+    /// Pairing packets are rejected because pairing is wire-only.
     pub fn decode(data: &[u8]) -> Result<Self, ProtocolError> {
         if data.is_empty() {
             return Err(ProtocolError::InvalidPayload);
         }
 
         let message_type = MessageType::try_from(data[0])?;
+
+        if message_type == MessageType::Pairing {
+            return Err(ProtocolError::InvalidMessageType(
+                MessageType::Pairing as u8,
+            ));
+        }
+
         let expected_length = message_type.encoded_len();
 
         if data.len() != expected_length {
@@ -291,25 +245,128 @@ impl Message {
                 engaged: decode_bool(data[1])?,
             })),
 
-            MessageType::Pairing => {
-                let pairing_type = PairingMessageType::try_from(data[1])?;
-                let device = DeviceId::try_from(data[2])?;
+            MessageType::Pairing => unreachable!(),
+        }
+    }
+}
 
-                let token = u64::from_le_bytes(
-                    data[3..11]
-                        .try_into()
-                        .map_err(|_| ProtocolError::InvalidPayload)?,
-                );
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PairHello {
+    pub device: DeviceId,
+    pub mac: [u8; 6],
+}
 
-                let pairing = match pairing_type {
-                    PairingMessageType::Hello => PairingMessage::Hello(PairHello { device, token }),
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PairAck {
+    pub device: DeviceId,
+    pub mac: [u8; 6],
+}
 
-                    PairingMessageType::Ack => PairingMessage::Ack(PairAck { device, token }),
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum PairingMessageType {
+    Hello = 1,
+    Ack = 2,
+}
+
+impl TryFrom<u8> for PairingMessageType {
+    type Error = ProtocolError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            1 => Ok(Self::Hello),
+            2 => Ok(Self::Ack),
+            _ => Err(ProtocolError::InvalidPairingMessageType(value)),
+        }
+    }
+}
+
+/// Pairing messages exist only on the physical wire.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PairingMessage {
+    Hello(PairHello),
+    Ack(PairAck),
+}
+
+/// Anything that can travel over the physical wire.
+///
+/// The wire supports both normal messages and the wire-only pairing protocol.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WireMessage {
+    Message(Message),
+    Pairing(PairingMessage),
+}
+
+impl From<Message> for WireMessage {
+    fn from(message: Message) -> Self {
+        Self::Message(message)
+    }
+}
+
+impl WireMessage {
+    pub fn encode(&self, buffer: &mut [u8]) -> Result<usize, ProtocolError> {
+        match self {
+            Self::Message(message) => message.encode(buffer),
+
+            Self::Pairing(pairing) => {
+                let packet_length = MessageType::Pairing.encoded_len();
+
+                if buffer.len() < packet_length {
+                    return Err(ProtocolError::BufferTooSmall);
+                }
+
+                buffer[0] = MessageType::Pairing as u8;
+
+                let (pairing_type, device, mac) = match pairing {
+                    PairingMessage::Hello(message) => {
+                        (PairingMessageType::Hello, message.device, message.mac)
+                    }
+
+                    PairingMessage::Ack(message) => {
+                        (PairingMessageType::Ack, message.device, message.mac)
+                    }
                 };
 
-                Ok(Self::Pairing(pairing))
+                buffer[1] = pairing_type as u8;
+                buffer[2] = device as u8;
+                buffer[3..9].copy_from_slice(&mac);
+
+                Ok(packet_length)
             }
         }
+    }
+
+    pub fn decode(data: &[u8]) -> Result<Self, ProtocolError> {
+        if data.is_empty() {
+            return Err(ProtocolError::InvalidPayload);
+        }
+
+        let message_type = MessageType::try_from(data[0])?;
+
+        if message_type != MessageType::Pairing {
+            return Ok(Self::Message(Message::decode(data)?));
+        }
+
+        let expected_length = MessageType::Pairing.encoded_len();
+
+        if data.len() != expected_length {
+            return Err(ProtocolError::InvalidPayload);
+        }
+
+        let pairing_type = PairingMessageType::try_from(data[1])?;
+        let device = DeviceId::try_from(data[2])?;
+
+        let mac: [u8; 6] = data[3..9]
+            .try_into()
+            .map_err(|_| ProtocolError::InvalidPayload)?;
+
+        let pairing = match pairing_type {
+            PairingMessageType::Hello => PairingMessage::Hello(PairHello { device, mac }),
+
+            PairingMessageType::Ack => PairingMessage::Ack(PairAck { device, mac }),
+        };
+
+        Ok(Self::Pairing(pairing))
     }
 }
 
@@ -326,7 +383,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn wire_format_and_round_trip() {
+    fn normal_messages_round_trip() {
         let cases: &[(Message, &[u8])] = &[
             (Message::Throttle(Throttle { amount: 255 }), &[1, 255]),
             (Message::ABS(ABSMode::Street), &[2, 1]),
@@ -336,94 +393,93 @@ mod tests {
             (Message::Clutch(Clutch { engaged: true }), &[4, 1]),
             (Message::KillSwitch(KillSwitch { engaged: false }), &[5, 0]),
             (Message::KillSwitch(KillSwitch { engaged: true }), &[5, 1]),
-            (
-                Message::Pairing(PairingMessage::Hello(PairHello {
-                    device: DeviceId::Helmet,
-                    token: 0x1122_3344_5566_7788,
-                })),
-                &[6, 1, 2, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11],
-            ),
-            (
-                Message::Pairing(PairingMessage::Ack(PairAck {
-                    device: DeviceId::Goggle,
-                    token: 0x8877_6655_4433_2211,
-                })),
-                &[6, 2, 3, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88],
-            ),
         ];
 
         for &(message, wire) in cases {
-            let mut out = [0xAA; 32];
+            let mut buffer = [0xAA; 32];
 
-            let len = message.encode(&mut out).unwrap();
+            let len = message.encode(&mut buffer).unwrap();
 
-            assert_eq!(&out[..len], wire);
+            assert_eq!(&buffer[..len], wire);
             assert_eq!(Message::decode(wire).unwrap(), message);
 
-            assert!(out[len..].iter().all(|&byte| byte == 0xAA));
+            assert!(buffer[len..].iter().all(|&byte| byte == 0xAA));
         }
     }
 
     #[test]
-    fn buffer_boundaries() {
-        let messages = [
-            Message::Throttle(Throttle { amount: 255 }),
-            Message::Rpm(Rpm { amount: 5000 }),
-            Message::Pairing(PairingMessage::Hello(PairHello {
-                device: DeviceId::Helmet,
-                token: 123,
-            })),
-        ];
+    fn normal_messages_can_travel_over_wire() {
+        let message = Message::Rpm(Rpm { amount: 5000 });
 
-        for message in messages {
-            let required = message.message_type().encoded_len();
+        let wire_message = WireMessage::from(message);
 
-            for len in 0..required {
-                let mut out = [0xAA; 32];
+        let mut buffer = [0; 32];
+        let len = wire_message.encode(&mut buffer).unwrap();
 
-                assert_eq!(
-                    message.encode(&mut out[..len]),
-                    Err(ProtocolError::BufferTooSmall),
-                );
-
-                assert!(out.iter().all(|&byte| byte == 0xAA));
-            }
-        }
+        assert_eq!(
+            WireMessage::decode(&buffer[..len]).unwrap(),
+            WireMessage::Message(message),
+        );
     }
 
     #[test]
-    fn rejects_incorrect_packet_lengths() {
-        let message = Message::Pairing(PairingMessage::Hello(PairHello {
+    fn pair_hello_round_trip() {
+        let message = WireMessage::Pairing(PairingMessage::Hello(PairHello {
             device: DeviceId::Helmet,
-            token: 123,
+            mac: [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF],
+        }));
+
+        let expected = [6, 1, 2, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF];
+
+        let mut buffer = [0; 32];
+        let len = message.encode(&mut buffer).unwrap();
+
+        assert_eq!(&buffer[..len], &expected);
+
+        assert_eq!(WireMessage::decode(&buffer[..len]).unwrap(), message,);
+    }
+
+    #[test]
+    fn pair_ack_round_trip() {
+        let message = WireMessage::Pairing(PairingMessage::Ack(PairAck {
+            device: DeviceId::Goggle,
+            mac: [1, 2, 3, 4, 5, 6],
         }));
 
         let mut buffer = [0; 32];
         let len = message.encode(&mut buffer).unwrap();
 
-        for short_len in 0..len {
-            assert_eq!(
-                Message::decode(&buffer[..short_len]),
-                Err(ProtocolError::InvalidPayload),
-            );
-        }
+        assert_eq!(WireMessage::decode(&buffer[..len]).unwrap(), message,);
+    }
 
-        buffer[len] = 0;
+    #[test]
+    fn normal_protocol_rejects_pairing_packets() {
+        let wire = [6, 1, DeviceId::Helmet as u8, 1, 2, 3, 4, 5, 6];
 
         assert_eq!(
-            Message::decode(&buffer[..len + 1]),
-            Err(ProtocolError::InvalidPayload),
+            Message::decode(&wire),
+            Err(ProtocolError::InvalidMessageType(6)),
         );
     }
 
     #[test]
-    fn rejects_unknown_message_types() {
-        for kind in [0, 7, 100, 255] {
-            assert_eq!(
-                Message::decode(&[kind, 0]),
-                Err(ProtocolError::InvalidMessageType(kind)),
-            );
-        }
+    fn rejects_invalid_pairing_type() {
+        let wire = [6, 99, DeviceId::Helmet as u8, 1, 2, 3, 4, 5, 6];
+
+        assert_eq!(
+            WireMessage::decode(&wire),
+            Err(ProtocolError::InvalidPairingMessageType(99)),
+        );
+    }
+
+    #[test]
+    fn rejects_invalid_device_id() {
+        let wire = [6, PairingMessageType::Hello as u8, 99, 1, 2, 3, 4, 5, 6];
+
+        assert_eq!(
+            WireMessage::decode(&wire),
+            Err(ProtocolError::InvalidDeviceId(99)),
+        );
     }
 
     #[test]
@@ -434,34 +490,23 @@ mod tests {
     }
 
     #[test]
-    fn rejects_invalid_pairing_type() {
-        let wire = [6, 99, DeviceId::Helmet as u8, 0, 0, 0, 0, 0, 0, 0, 0];
+    fn buffer_boundaries() {
+        let message = WireMessage::Pairing(PairingMessage::Hello(PairHello {
+            device: DeviceId::Helmet,
+            mac: [1, 2, 3, 4, 5, 6],
+        }));
 
-        assert_eq!(
-            Message::decode(&wire),
-            Err(ProtocolError::InvalidPairingMessageType(99)),
-        );
-    }
+        let required = MessageType::Pairing.encoded_len();
 
-    #[test]
-    fn rejects_invalid_device_id() {
-        let wire = [
-            6,
-            PairingMessageType::Hello as u8,
-            99,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-        ];
+        for len in 0..required {
+            let mut buffer = [0xAA; 32];
 
-        assert_eq!(
-            Message::decode(&wire),
-            Err(ProtocolError::InvalidDeviceId(99)),
-        );
+            assert_eq!(
+                message.encode(&mut buffer[..len]),
+                Err(ProtocolError::BufferTooSmall),
+            );
+
+            assert!(buffer.iter().all(|&byte| byte == 0xAA));
+        }
     }
 }
