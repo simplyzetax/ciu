@@ -224,6 +224,7 @@ dependencies = [
  "anyhow",
  "ciu-core",
  "embuild",
+ "esp-idf-hal",
  "esp-idf-svc",
  "serde",
  "serde_json",
