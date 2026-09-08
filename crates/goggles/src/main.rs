@@ -1,6 +1,9 @@
+use std::sync::{Arc, Mutex};
+
+use ciu_core::iec::protocol::DeviceId;
 use ciu_esp32::{
     pairing::pair_as_goggle,
-    saved_state::StateStore,
+    saved_state::{PeerRuntime, RuntimeState, StateStore},
     wire::{GpioWireIo, Wire},
 };
 use esp_idf_hal::{delay::FreeRtos, gpio::PinDriver, peripherals::Peripherals};
@@ -22,8 +25,6 @@ fn main() {
 }
 
 fn run() -> anyhow::Result<()> {
-    esp_idf_svc::sys::link_patches();
-
     let peripherals = Peripherals::take()?;
     let mut led = PinDriver::output(peripherals.pins.gpio2)?;
 
@@ -31,25 +32,54 @@ fn run() -> anyhow::Result<()> {
     let my_mac = ciu_esp32::wifi::station_mac(&wifi)?;
 
     let mut store = StateStore::new()?;
-    let mut state = store.load()?;
+    let initial_state = store.load()?;
 
-    for peer in state.clone().peers {
-        println!("Peer with device id {:?} is paired", peer.device);
+    for peer in &initial_state.peers {
+        println!("Peer {:?} is paired", peer.device);
     }
+
+    let saved_state = Arc::new(Mutex::new(initial_state));
+
+    let runtime_state = Arc::new(Mutex::new({
+        let state = saved_state.lock().expect("saved state mutex poisoned");
+
+        RuntimeState::from_saved_state(&state)
+    }));
+
+    let radio = esp_idf_svc::espnow::EspNow::take()?;
+    let esp_now = Arc::new(ciu_esp32::espnow::EspNow::new(radio));
+
+    esp_now.on_receive(Arc::clone(&saved_state), Arc::clone(&runtime_state))?;
 
     let io = GpioWireIo::new(peripherals.pins.gpio4)?;
     let mut wire = Wire::new(io);
+
+    let pairing_saved_state = Arc::clone(&saved_state);
+    let pairing_runtime_state = Arc::clone(&runtime_state);
 
     let _pairing_thread = std::thread::Builder::new()
         .name("pairing".into())
         .stack_size(PAIRING_STACK_SIZE)
         .spawn(move || {
             loop {
+                let mut state = pairing_saved_state
+                    .lock()
+                    .expect("saved state mutex poisoned");
+
                 match pair_as_goggle(&mut wire, my_mac, &mut state, &mut store) {
                     Ok(helmet_mac) => {
                         println!("Paired with helmet {:02X?}", helmet_mac);
-                        led.set_high();
+                        led.set_high().ok();
+
+                        let mut runtime = pairing_runtime_state
+                            .lock()
+                            .expect("runtime state mutex poisoned");
+
+                        if runtime.peer(DeviceId::Helmet).is_none() {
+                            runtime.peers.push(PeerRuntime::new(DeviceId::Helmet));
+                        }
                     }
+
                     Err(error) => {
                         let is_timeout = error
                             .chain()
@@ -57,6 +87,7 @@ fn run() -> anyhow::Result<()> {
 
                         if !is_timeout {
                             println!("Pairing failed: {error:#}");
+                            led.set_low().ok();
                         }
 
                         FreeRtos::delay_ms(100);

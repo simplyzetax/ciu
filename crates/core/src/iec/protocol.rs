@@ -76,6 +76,8 @@ pub enum MessageType {
     Clutch = 4,
     KillSwitch = 5,
     Pairing = 6,
+    Ping = 7,
+    Pong = 8,
 }
 
 impl TryFrom<u8> for MessageType {
@@ -89,6 +91,8 @@ impl TryFrom<u8> for MessageType {
             4 => Ok(Self::Clutch),
             5 => Ok(Self::KillSwitch),
             6 => Ok(Self::Pairing),
+            7 => Ok(Self::Ping),
+            8 => Ok(Self::Pong),
             _ => Err(ProtocolError::InvalidMessageType(value)),
         }
     }
@@ -105,6 +109,10 @@ impl MessageType {
 
             // type + pairing type + device + MAC
             Self::Pairing => 1 + 1 + 1 + 6,
+
+            // type + u16 sequence
+            Self::Ping => 3,
+            Self::Pong => 3,
         }
     }
 }
@@ -148,6 +156,16 @@ pub struct KillSwitch {
     pub engaged: bool,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Ping {
+    pub sequence: u16,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Pong {
+    pub sequence: u16,
+}
+
 /// A normal CIU message.
 ///
 /// These messages may be transported over both ESP-NOW and the physical wire.
@@ -158,8 +176,9 @@ pub enum Message {
     Rpm(Rpm),
     Clutch(Clutch),
     KillSwitch(KillSwitch),
+    Ping(Ping),
+    Pong(Pong),
 }
-
 impl Message {
     pub fn message_type(&self) -> MessageType {
         match self {
@@ -168,6 +187,8 @@ impl Message {
             Self::Rpm(_) => MessageType::Rpm,
             Self::Clutch(_) => MessageType::Clutch,
             Self::KillSwitch(_) => MessageType::KillSwitch,
+            Self::Ping(_) => MessageType::Ping,
+            Self::Pong(_) => MessageType::Pong,
         }
     }
 
@@ -200,6 +221,14 @@ impl Message {
 
             Self::KillSwitch(kill_switch) => {
                 buffer[1] = u8::from(kill_switch.engaged);
+            }
+
+            Self::Ping(ping) => {
+                buffer[1..3].copy_from_slice(&ping.sequence.to_le_bytes());
+            }
+
+            Self::Pong(pong) => {
+                buffer[1..3].copy_from_slice(&pong.sequence.to_le_bytes());
             }
         }
 
@@ -243,6 +272,14 @@ impl Message {
 
             MessageType::KillSwitch => Ok(Self::KillSwitch(KillSwitch {
                 engaged: decode_bool(data[1])?,
+            })),
+
+            MessageType::Ping => Ok(Self::Ping(Ping {
+                sequence: u16::from_le_bytes([data[1], data[2]]),
+            })),
+
+            MessageType::Pong => Ok(Self::Pong(Pong {
+                sequence: u16::from_le_bytes([data[1], data[2]]),
             })),
 
             MessageType::Pairing => unreachable!(),
