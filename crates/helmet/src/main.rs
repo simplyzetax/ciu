@@ -31,6 +31,11 @@ fn run() -> anyhow::Result<()> {
 
     let mut store = StateStore::new()?;
     let mut state = store.load()?;
+
+    for peer in state.clone().peers {
+        println!("Peer with device id {:?} is paired", peer.device);
+    }
+
     let io = GpioWireIo::new(peripherals.pins.gpio4)?;
     let mut wire = Wire::new(io);
     // GPIO33 is unused elsewhere and is not a classic ESP32 boot-strapping or

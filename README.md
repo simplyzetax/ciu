@@ -26,3 +26,8 @@ Parts:
 
 - [0.96" OLED Display I2C/IIC/TWI 128x64 Pixel für Arduino](https://www.roboter-bausatz.de/p/0.96-oled-display-i2c-iic-twi-128x64-pixel-fuer-arduino)
 - [Optical Prism 45° Splitting Ratio 50%:50%](https://www.amazon.de/gp/product/B0F7LHQWTG/ref=ox_sc_act_title_3?smid=A3FMVC8KTJNQWA&th=1)
+
+INFO:
+
+Serial 10 = Goggles
+Serial 210 = Helmet
