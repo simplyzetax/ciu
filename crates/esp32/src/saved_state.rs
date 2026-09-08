@@ -22,10 +22,6 @@ impl SavedState {
         self.peers.iter().find(|peer| peer.device == device)
     }
 
-    /*
-    TODO: This shoould run when the googles connect to the helmet via magnetic pins
-    or when the bike connects to the helmet via phone app (or somehow else)
-    */
     pub fn set_peer(&mut self, device: DeviceId, mac: [u8; 6]) {
         if let Some(peer) = self.peers.iter_mut().find(|peer| peer.device == device) {
             peer.mac = mac;

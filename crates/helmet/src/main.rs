@@ -1,4 +1,3 @@
-use ciu_esp32::saved_state::StateStore;
 use esp_idf_hal::{delay::FreeRtos, gpio::PinDriver, peripherals::Peripherals};
 
 fn main() -> anyhow::Result<()> {
@@ -6,9 +5,6 @@ fn main() -> anyhow::Result<()> {
 
     let peripherals = Peripherals::take()?;
     let mut led = PinDriver::output(peripherals.pins.gpio2)?;
-
-    let mut store = StateStore::new()?;
-    let mut state = store.load()?;
 
     let _wifi = ciu_esp32::wifi::start(peripherals.modem, ciu_esp32::wifi::WIFI_CHANNEL)?;
 

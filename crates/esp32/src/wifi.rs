@@ -2,7 +2,7 @@ use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::modem::Modem,
     sys,
-    wifi::{ClientConfiguration, Configuration, EspWifi},
+    wifi::{ClientConfiguration, Configuration, EspWifi, WifiDeviceId},
 };
 
 pub const WIFI_CHANNEL: u8 = 2;
@@ -21,17 +21,8 @@ pub fn start(modem: Modem<'static>, channel: u8) -> anyhow::Result<EspWifi<'stat
     Ok(wifi)
 }
 
-pub fn mac_address() -> anyhow::Result<[u8; 6]> {
-    let mut mac = [0u8; 6];
-
-    let result =
-        unsafe { sys::esp_wifi_get_mac(sys::wifi_interface_t_WIFI_IF_STA, mac.as_mut_ptr()) };
-
-    if result != sys::ESP_OK {
-        anyhow::bail!("failed to get Wi-Fi MAC address: {result}");
-    }
-
-    Ok(mac)
+pub fn station_mac(wifi: &EspWifi<'_>) -> anyhow::Result<[u8; 6]> {
+    Ok(wifi.get_mac(WifiDeviceId::Sta)?)
 }
 
 fn set_channel(channel: u8) -> anyhow::Result<()> {

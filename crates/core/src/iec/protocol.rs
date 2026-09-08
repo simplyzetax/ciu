@@ -509,4 +509,62 @@ mod tests {
             assert!(buffer.iter().all(|&byte| byte == 0xAA));
         }
     }
+
+    #[test]
+    fn normal_buffer_boundaries() {
+        let message = Message::Rpm(Rpm { amount: 9_000 });
+        let required = message.message_type().encoded_len();
+
+        for len in 0..required {
+            let mut buffer = [0xAA; 32];
+
+            assert_eq!(
+                message.encode(&mut buffer[..len]),
+                Err(ProtocolError::BufferTooSmall),
+            );
+            assert!(buffer.iter().all(|&byte| byte == 0xAA));
+        }
+    }
+
+    #[test]
+    fn rejects_truncated_and_extra_normal_packets() {
+        let packets: &[&[u8]] = &[
+            &[1, 42],
+            &[2, ABSMode::Street as u8],
+            &[3, 0x34, 0x12],
+            &[4, 1],
+            &[5, 0],
+        ];
+
+        for packet in packets {
+            for length in 0..packet.len() {
+                assert!(Message::decode(&packet[..length]).is_err());
+            }
+        }
+
+        for packet in [
+            &[1, 42, 0][..],
+            &[2, ABSMode::Street as u8, 0][..],
+            &[3, 0x34, 0x12, 0][..],
+            &[4, 1, 0][..],
+            &[5, 0, 0][..],
+        ] {
+            assert_eq!(Message::decode(packet), Err(ProtocolError::InvalidPayload));
+        }
+    }
+
+    #[test]
+    fn rejects_truncated_and_extra_pairing_packets() {
+        let packet = [6, PairingMessageType::Hello as u8, 2, 1, 2, 3, 4, 5, 6];
+
+        for length in 0..packet.len() {
+            assert!(WireMessage::decode(&packet[..length]).is_err());
+        }
+
+        let packet_with_extra_byte = [6, PairingMessageType::Hello as u8, 2, 1, 2, 3, 4, 5, 6, 0];
+        assert_eq!(
+            WireMessage::decode(&packet_with_extra_byte),
+            Err(ProtocolError::InvalidPayload),
+        );
+    }
 }
