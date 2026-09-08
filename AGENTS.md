@@ -1,0 +1,1 @@
+Write clean and readable code that is easily extensible if it doesnt add too much architectural complexity and write code so a relatively new rust programmer can easily read and parse it to see what it does
