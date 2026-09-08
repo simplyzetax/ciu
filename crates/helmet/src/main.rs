@@ -1,4 +1,5 @@
 use ciu_esp32::{
+    attachment::AttachmentPin,
     pairing::pair_as_helmet,
     saved_state::StateStore,
     wire::{GpioWireIo, Wire},
@@ -18,22 +19,24 @@ fn main() -> anyhow::Result<()> {
     let mut state = store.load()?;
     let io = GpioWireIo::new(peripherals.pins.gpio4)?;
     let mut wire = Wire::new(io);
+    // GPIO33 is unused elsewhere and is not a classic ESP32 boot-strapping or
+    // flash pin. PAIR_DETECT is active-low through the goggle-side ground.
+    let detect = AttachmentPin::new(peripherals.pins.gpio33)?;
 
-    // PAIR_DATA has no separate connected level. Repeated protocol wakes make
-    // an attachment observable without treating normal data transitions as
-    // connection changes.
     let _pairing_thread = std::thread::spawn(move || {
         loop {
+            detect.wait_for_attach();
+
             match pair_as_helmet(&mut wire, my_mac, &mut state, &mut store) {
                 Ok(goggle_mac) => {
                     println!("Paired with goggle {:02X?}", goggle_mac);
-                    break;
                 }
                 Err(error) => {
                     println!("Pairing failed: {error:#}");
-                    FreeRtos::delay_ms(500);
                 }
             }
+
+            detect.wait_for_detach();
         }
     });
 

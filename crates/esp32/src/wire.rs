@@ -12,8 +12,8 @@ const MAX_FRAME_SIZE: usize = FRAME_SYNC.len() + 1 + MAX_PAYLOAD_SIZE + 1;
 
 const BIT_TIME_US: u32 = 500;
 const START_POLL_US: u32 = 25;
-const WAKE_PULSE_MS: u32 = 20;
-const MIN_WAKE_PULSE: Duration = Duration::from_millis(10);
+const PREAMBLE_PULSE_MS: u32 = 20;
+const MIN_PREAMBLE_PULSE: Duration = Duration::from_millis(10);
 const START_GAP_US: u32 = 20_000;
 const FIRST_BYTE_TIMEOUT: Duration = Duration::from_millis(30);
 const INTER_BYTE_TIMEOUT: Duration = Duration::from_millis(2);
@@ -106,7 +106,7 @@ impl<'d> GpioWireIo<'d> {
         }
     }
 
-    fn wait_for_wake(&self, timeout: Duration) -> anyhow::Result<()> {
+    fn wait_for_preamble(&self, timeout: Duration) -> anyhow::Result<()> {
         let deadline = Instant::now() + timeout;
 
         loop {
@@ -122,13 +122,13 @@ impl<'d> GpioWireIo<'d> {
 
             while self.pin.is_low() {
                 if Instant::now() >= deadline {
-                    anyhow::bail!("wire receive timed out during wake pulse");
+                    anyhow::bail!("wire receive timed out during preamble");
                 }
 
-                if low_since.elapsed() >= MIN_WAKE_PULSE {
+                if low_since.elapsed() >= MIN_PREAMBLE_PULSE {
                     while self.pin.is_low() {
                         if Instant::now() >= deadline {
-                            anyhow::bail!("wire receive timed out during wake pulse");
+                            anyhow::bail!("wire receive timed out during preamble");
                         }
 
                         FreeRtos::delay_ms(1);
@@ -158,7 +158,7 @@ impl WireIo for GpioWireIo<'_> {
 
         let result: anyhow::Result<()> = (|| {
             self.pin.set_low()?;
-            FreeRtos::delay_ms(WAKE_PULSE_MS);
+            FreeRtos::delay_ms(PREAMBLE_PULSE_MS);
             self.pin.set_high()?;
             Ets::delay_us(START_GAP_US);
 
@@ -179,7 +179,7 @@ impl WireIo for GpioWireIo<'_> {
         }
 
         self.pin.set_high()?;
-        self.wait_for_wake(timeout)?;
+        self.wait_for_preamble(timeout)?;
 
         let Some(first_byte) = self.read_uart_byte(FIRST_BYTE_TIMEOUT)? else {
             anyhow::bail!("wire frame contained no data");
