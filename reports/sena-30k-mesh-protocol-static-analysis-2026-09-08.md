@@ -46,30 +46,47 @@ SHA-256: ff2b896a2ecb8a3704d0a2c368c1caae23a76a2fa79d29cd87b14e55d919f3b6
 
 The earlier baseline is `reports/sena-30k-mesh-3-firmware-esp32-feasibility.md`.
 
+## Reproducing this analysis
+
+`tools/mesh3.py` is a clean-room reference implementation of everything below: the Airoha container unpacker, CRC-16/XMODEM, the 17-byte header packer/parser, node-ID derivation, an AES-128 block cipher, the nonce builder, and the protected-record protect/unprotect pair. It is standard library only — no pycryptodome, no external unpacker.
+
+```text
+python3 tools/mesh3.py verify        # re-derive every vector in this report
+python3 tools/mesh3.py unpack        # decompress and hash-check the container
+python3 tools/mesh3.py parse <hex>   # decode, and if protected, decrypt one frame
+```
+
+`verify` runs 22 checks against the local image and fails nonzero on any mismatch: container digests, both channel tables, the AES key bytes, the controller state table, the frame vector, the nonce and keystream vectors, frame-size bounds, and a NIST AES-128 known-answer test that proves the bundled cipher rather than assuming it.
+
+Every hex constant in this document is therefore executable, not transcribed.
+
 ## Recovering the SP113 image
 
 ### Airoha container
 
 `Submesh_v0.5b0.bin` has a 32-byte SHA-256 at offset `0x0000`. That hash exactly matches the bytes from file offset `0x0100` through EOF.
 
-The TLV metadata beginning at `0x0100` says:
+The TLV metadata beginning at `0x0100` uses `<u16 tag><u16 length><body>` records terminated by `0xffff` filler:
 
-| Field | Value |
-|---|---|
-| Compression | `1` = LZMA |
-| Encryption | None |
-| Integrity | `1` = SHA-256 |
-| Compressed firmware offset | `0x1000` |
-| Compressed firmware size | `0x1142ac` |
-| Platform | `ab156x` |
-| Design | `headset_ref_design` |
+| Tag | Field | Value |
+|---:|---|---|
+| `0x11` | Compression | `1` = LZMA |
+| `0x11` | Integrity | `1` = SHA-256 |
+| `0x11` | Compressed payload offset | `0x1000` |
+| `0x11` | Compressed payload size | `0x1142ac` |
+| `0x12` | Mover table | 2 entries |
+| `0x14` | Section digests | 2 × SHA-256 |
+| `0x20` | Platform | `ab156x` |
+| `0x21` | Design | `headset_ref_design` |
 
-The mover table describes two output sections:
+The `0x11` record carries no encryption field, and none is needed: the LZMA stream decodes and both section digests match the plaintext directly.
 
-| Section | Decompressed size | Destination offset | Verified SHA-256 |
-|---|---:|---:|---|
-| 0 | `0x87000` | `0x13000` | `9392917120bc0bf3426bdc734f130cce6efd593ce84e8d5fad57eb96742e8ea7` |
-| 1 | `0x13e000` | `0x133000` | `732cb245b1d0bf8dde9cd35a8ace30ed367ecfedd96936d65adb9f42145edbfe` |
+The mover table describes two output sections. Its first field is an image-space offset, so the section's offset inside the decompressed blob is that value minus the `0x1000` payload base:
+
+| Section | Blob offset | Decompressed size | Destination offset | Verified SHA-256 |
+|---|---:|---:|---:|---|
+| 0 | `0x0` | `0x87000` | `0x13000` | `9392917120bc0bf3426bdc734f130cce6efd593ce84e8d5fad57eb96742e8ea7` |
+| 1 | `0x87000` | `0x13e000` | `0x133000` | `732cb245b1d0bf8dde9cd35a8ace30ed367ecfedd96936d65adb9f42145edbfe` |
 
 LZMA decompression produced exactly `0x1c5000` bytes. Both section hashes match the hashes stored in the container.
 

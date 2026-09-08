@@ -2,6 +2,17 @@
 
 ## End goal: ESP32 that is Sena and Cardo Mesh compatible. Replaces Sena completely. Also, built in HUD inside of Goggles.
 
+### Status
+
+The Sena Mesh 3 air protocol has been recovered from firmware by static analysis: frame format, packet subtypes, discovery and admission, routing, timing, audio packing, and the protected-record crypto.
+
+- [Mesh protocol static analysis](reports/sena-30k-mesh-protocol-static-analysis-2026-09-08.md) — current reference, including the ESP32-C6 implementation requirements and the over-the-air capture plan.
+- [First-pass ESP32 feasibility](reports/sena-30k-mesh-3-firmware-esp32-feasibility.md) — superseded baseline, kept for the FCC and firmware-distribution evidence.
+- `tools/mesh3.py` — clean-room reference implementation; `python3 tools/mesh3.py verify` re-derives every published vector from the local image.
+- `firmware/` — downloaded images, extracted components, and `manifest.json` with verified hashes.
+
+Open items are capture-dependent, not static: the lower MAC/FCS boundary, the exact Speex submode, and the predicted Group Mesh network-ID truncation.
+
 ### Sena and Cardo replacement
 
 Parts:
