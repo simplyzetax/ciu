@@ -6,6 +6,7 @@
 //! - RPM: `[3, low_byte, high_byte]` (little-endian)
 //! - Clutch: `[4, engaged]`, where 0 = false and 1 = true
 
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -18,6 +19,14 @@ pub enum ProtocolError {
 
     #[error("invalid payload")]
     InvalidPayload,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[repr(u8)]
+pub enum DeviceId {
+    Bike = 1,
+    Helmet = 2,
+    Goggle = 3,
 }
 
 /// The numeric IDs sent in the first byte of a packet.

@@ -213,6 +213,7 @@ dependencies = [
 name = "ciu-core"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "thiserror 2.0.20",
 ]
 
@@ -224,6 +225,8 @@ dependencies = [
  "ciu-core",
  "embuild",
  "esp-idf-svc",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

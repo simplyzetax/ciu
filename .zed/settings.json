@@ -1,0 +1,12 @@
+{
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "cargo": {
+          "target": "xtensa-esp32-espidf",
+          "allTargets": false
+        }
+      }
+    }
+  }
+}
