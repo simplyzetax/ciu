@@ -1,1 +1,17 @@
-/target
+# Rust build output
+/target/
+
+# ESP-IDF / embuild generated files
+/.embuild/
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+
+# Local environment
+.env
+.env.*
+!.env.example
