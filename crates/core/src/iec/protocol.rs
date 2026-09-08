@@ -28,6 +28,7 @@ pub enum MessageType {
     ABS = 2,
     Rpm = 3,
     Clutch = 4,
+    KillSwitch = 5,
 }
 
 // TryFrom converts a byte into a MessageType, or returns an error for an unknown ID.
@@ -67,6 +68,11 @@ pub struct Clutch {
     pub engaged: bool,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct KillSwitch {
+    pub engaged: bool,
+}
+
 /// A message contains both its type and the value to send.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Message {
@@ -74,6 +80,7 @@ pub enum Message {
     ABS(ABSMode),
     Rpm(Rpm),
     Clutch(Clutch),
+    KillSwitch(KillSwitch),
 }
 
 impl Message {
@@ -83,6 +90,7 @@ impl Message {
             Message::ABS(_) => MessageType::ABS,
             Message::Rpm(_) => MessageType::Rpm,
             Message::Clutch(_) => MessageType::Clutch,
+            Message::KillSwitch(_) => MessageType::KillSwitch,
         }
     }
 
@@ -110,6 +118,9 @@ impl Message {
             }
             Message::Clutch(clutch) => {
                 buffer[1] = if clutch.engaged { 1 } else { 0 };
+            }
+            Message::KillSwitch(killswitch) => {
+                buffer[1] = if killswitch.engaged { 1 } else { 0 };
             }
         }
 
@@ -158,6 +169,14 @@ impl Message {
                     _ => return Err(ProtocolError::InvalidPayload),
                 };
                 Ok(Message::Clutch(Clutch { engaged }))
+            }
+            MessageType::KillSwitch => {
+                let engaged = match data[1] {
+                    0 => false,
+                    1 => true,
+                    _ => return Err(ProtocolError::InvalidPayload),
+                };
+                Ok(Message::KillSwitch(KillSwitch { engaged }))
             }
         }
     }
