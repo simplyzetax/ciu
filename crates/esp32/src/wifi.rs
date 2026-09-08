@@ -1,6 +1,7 @@
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::modem::Modem,
+    sys,
     wifi::{ClientConfiguration, Configuration, EspWifi},
 };
 
@@ -26,13 +27,10 @@ fn set_channel(channel: u8) -> anyhow::Result<()> {
     }
 
     let result = unsafe {
-        esp_idf_sys::esp_wifi_set_channel(
-            channel,
-            esp_idf_sys::wifi_second_chan_t_WIFI_SECOND_CHAN_NONE,
-        )
+        sys::esp_wifi_set_channel(channel, sys::wifi_second_chan_t_WIFI_SECOND_CHAN_NONE)
     };
 
-    if result != esp_idf_sys::ESP_OK {
+    if result != sys::ESP_OK {
         anyhow::bail!("failed to set Wi-Fi channel: {result}");
     }
 
