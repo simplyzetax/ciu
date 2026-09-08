@@ -47,7 +47,7 @@ fn run() -> anyhow::Result<()> {
     }));
 
     let radio = esp_idf_svc::espnow::EspNow::take()?;
-    let esp_now = Arc::new(ciu_esp32::espnow::EspNow::new(radio));
+    let esp_now = Arc::new(ciu_esp32::espnow::EspNow::new(radio)?);
     {
         let state = saved_state.lock().expect("saved state mutex poisoned");
 
@@ -114,18 +114,16 @@ fn run() -> anyhow::Result<()> {
     let mut ping_sequence = 0u16;
 
     loop {
-        let helmet_mac = saved_state
-            .lock()
-            .expect("saved state mutex poisoned")
-            .peer(DeviceId::Helmet)
-            .map(|peer| peer.mac);
+        {
+            let state = saved_state.lock().expect("saved state mutex poisoned");
 
-        if let Some(helmet_mac) = helmet_mac {
-            if let Err(error) = esp_now.send_ping(helmet_mac, ping_sequence) {
-                println!("Failed to send Ping to helmet: {error:#}");
+            for peer in &state.peers {
+                if let Err(error) = esp_now.send_ping(peer.mac, ping_sequence) {
+                    println!("Failed to send Ping to {:?}: {error:#}", peer.device);
+                }
+
+                ping_sequence = ping_sequence.wrapping_add(1);
             }
-
-            ping_sequence = ping_sequence.wrapping_add(1);
         }
 
         FreeRtos::delay_ms(500);

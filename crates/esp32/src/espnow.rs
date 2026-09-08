@@ -1,6 +1,16 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    sync::{
+        Arc, Mutex,
+        mpsc::{Receiver, SyncSender, TrySendError, sync_channel},
+    },
+    thread,
+};
 
-use esp_idf_svc::espnow::{EspNow as EspIdfEspNow, PeerInfo};
+use esp_idf_hal::delay::FreeRtos;
+use esp_idf_svc::{
+    espnow::{EspNow as EspIdfEspNow, PeerInfo, SendStatus},
+    sys::ESP_ERR_ESPNOW_NO_MEM,
+};
 
 use ciu_core::iec::protocol::{DeviceId, Message, Ping, Pong};
 
@@ -11,16 +21,78 @@ use crate::saved_state::{RuntimeState, SavedState};
 ///
 /// Pairing messages are intentionally not supported here; pairing is
 /// performed exclusively over the physical wire.
+const SEND_QUEUE_CAPACITY: usize = 8;
+const SEND_RETRY_DELAY_MS: u32 = 10;
+const TX_STACK_SIZE: usize = 4 * 1024;
+
+struct OutgoingPacket {
+    peer_address: [u8; 6],
+    buffer: [u8; 250],
+    length: usize,
+}
+
 pub struct EspNow {
-    radio: EspIdfEspNow<'static>,
+    radio: Arc<EspIdfEspNow<'static>>,
+    send_queue: SyncSender<OutgoingPacket>,
+}
+
+fn transmit_packets(
+    radio: Arc<EspIdfEspNow<'static>>,
+    packets: Receiver<OutgoingPacket>,
+    completions: Receiver<SendStatus>,
+) {
+    while let Ok(packet) = packets.recv() {
+        loop {
+            match radio.send(packet.peer_address, &packet.buffer[..packet.length]) {
+                Ok(()) => {
+                    match completions.recv() {
+                        Ok(SendStatus::SUCCESS) => {}
+                        Ok(SendStatus::FAIL) => {
+                            println!("ESP-NOW delivery to {:02X?} failed", packet.peer_address);
+                        }
+                        Err(_) => return,
+                    }
+
+                    break;
+                }
+                Err(error) if error.code() == ESP_ERR_ESPNOW_NO_MEM => {
+                    FreeRtos::delay_ms(SEND_RETRY_DELAY_MS);
+                }
+                Err(error) => {
+                    println!(
+                        "ESP-NOW send to {:02X?} failed: {error}",
+                        packet.peer_address
+                    );
+                    break;
+                }
+            }
+        }
+    }
 }
 
 impl EspNow {
     /// Wraps an initialized ESP-NOW service.
     ///
     /// Keep Wi-Fi running for as long as this object exists.
-    pub fn new(radio: EspIdfEspNow<'static>) -> Self {
-        Self { radio }
+    pub fn new(radio: EspIdfEspNow<'static>) -> anyhow::Result<Self> {
+        let radio = Arc::new(radio);
+        let (send_queue, packets) = sync_channel(SEND_QUEUE_CAPACITY);
+        let (completion_sender, completions) = sync_channel(1);
+
+        radio.register_send_cb(move |_peer_address, status| {
+            let _ = completion_sender.try_send(status);
+        })?;
+
+        let transmitter_radio = Arc::clone(&radio);
+
+        thread::Builder::new()
+            .name("esp-now-tx".into())
+            .stack_size(TX_STACK_SIZE)
+            .spawn(move || {
+                transmit_packets(transmitter_radio, packets, completions);
+            })?;
+
+        Ok(Self { radio, send_queue })
     }
 
     pub fn add_peer(&self, peer_address: [u8; 6]) -> anyhow::Result<()> {
@@ -38,17 +110,26 @@ impl EspNow {
         Ok(())
     }
 
-    /// Queues a normal message for a registered peer.
+    /// Queues a normal message for serialized transmission.
     ///
-    /// Success means ESP-IDF accepted the packet for transmission; it does not
-    /// confirm application-level delivery.
+    /// Success means the local queue accepted the packet. The transmitter
+    /// waits for ESP-IDF's send callback before sending the next packet.
     pub fn send(&self, peer_address: [u8; 6], message: &Message) -> anyhow::Result<()> {
         let mut buffer = [0u8; 250];
-        let packet_length = message.encode(&mut buffer)?;
+        let length = message.encode(&mut buffer)?;
+        let packet = OutgoingPacket {
+            peer_address,
+            buffer,
+            length,
+        };
 
-        self.radio.send(peer_address, &buffer[..packet_length])?;
-
-        Ok(())
+        match self.send_queue.try_send(packet) {
+            Ok(()) => Ok(()),
+            Err(TrySendError::Full(_)) => anyhow::bail!("ESP-NOW send queue is full"),
+            Err(TrySendError::Disconnected(_)) => {
+                anyhow::bail!("ESP-NOW transmitter stopped")
+            }
+        }
     }
 
     /// Registers a callback for normal CIU messages received over ESP-NOW.
