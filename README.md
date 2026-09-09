@@ -13,6 +13,12 @@ The Sena Mesh 3 air protocol has been recovered from firmware by static analysis
 
 Open items are capture-dependent, not static: the lower MAC/FCS boundary, the exact Speex submode, and the predicted Group Mesh network-ID truncation.
 
+### Development
+
+Run `npm install` after cloning to install the Husky Git hooks. Before each
+commit, the pre-commit hook runs `cargo check-esp` against every workspace
+crate for the ESP32 target.
+
 ### Sena and Cardo replacement
 
 Parts:

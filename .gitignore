@@ -4,6 +4,9 @@
 # ESP-IDF / embuild generated files
 /.embuild/
 
+# Node tooling
+/node_modules/
+
 # macOS
 .DS_Store
 
