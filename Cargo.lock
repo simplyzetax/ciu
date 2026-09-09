@@ -239,8 +239,6 @@ dependencies = [
  "ciu-esp32",
  "embuild",
  "esp-idf-hal",
- "esp-idf-svc",
- "log",
 ]
 
 [[package]]
@@ -252,8 +250,6 @@ dependencies = [
  "ciu-esp32",
  "embuild",
  "esp-idf-hal",
- "esp-idf-svc",
- "log",
 ]
 
 [[package]]

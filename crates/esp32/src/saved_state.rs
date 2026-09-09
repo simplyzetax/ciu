@@ -1,5 +1,3 @@
-use std::time::{Duration, Instant};
-
 use esp_idf_svc::nvs::{EspDefaultNvsPartition, EspNvs, NvsDefault};
 use serde::{Deserialize, Serialize};
 
@@ -31,65 +29,6 @@ impl SavedState {
         }
 
         self.peers.push(Peer { device, mac });
-    }
-
-    pub fn remove_peer(&mut self, device: DeviceId) {
-        self.peers.retain(|peer| peer.device != device);
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct PeerRuntime {
-    pub device: DeviceId,
-    pub last_seen: Option<Instant>,
-}
-
-impl PeerRuntime {
-    pub fn new(device: DeviceId) -> Self {
-        Self {
-            device,
-            last_seen: None,
-        }
-    }
-
-    pub fn mark_seen(&mut self) {
-        self.last_seen = Some(Instant::now());
-    }
-
-    pub fn is_online(&self, timeout: Duration) -> bool {
-        self.last_seen
-            .is_some_and(|last_seen| last_seen.elapsed() < timeout)
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct RuntimeState {
-    pub peers: Vec<PeerRuntime>,
-}
-
-impl RuntimeState {
-    pub fn from_saved_state(state: &SavedState) -> Self {
-        Self {
-            peers: state
-                .peers
-                .iter()
-                .map(|peer| PeerRuntime::new(peer.device))
-                .collect(),
-        }
-    }
-
-    pub fn peer(&self, device: DeviceId) -> Option<&PeerRuntime> {
-        self.peers.iter().find(|peer| peer.device == device)
-    }
-
-    pub fn peer_mut(&mut self, device: DeviceId) -> Option<&mut PeerRuntime> {
-        self.peers.iter_mut().find(|peer| peer.device == device)
-    }
-
-    pub fn mark_seen(&mut self, device: DeviceId) {
-        if let Some(peer) = self.peer_mut(device) {
-            peer.mark_seen();
-        }
     }
 }
 

@@ -1,6 +1,6 @@
 use std::{
     sync::{
-        Arc, Mutex,
+        Arc,
         mpsc::{Receiver, SyncSender, TrySendError, sync_channel},
     },
     thread,
@@ -12,9 +12,7 @@ use esp_idf_svc::{
     sys::ESP_ERR_ESPNOW_NO_MEM,
 };
 
-use ciu_core::iec::protocol::{BikeSnapshot, DeviceId, Message, Ping, Pong};
-
-use crate::saved_state::{RuntimeState, SavedState};
+use ciu_core::iec::protocol::Message;
 
 /// Converts normal CIU messages to/from bytes and sends/receives them through
 /// ESP-IDF.
@@ -22,6 +20,7 @@ use crate::saved_state::{RuntimeState, SavedState};
 /// Pairing messages are intentionally not supported here; pairing is
 /// performed exclusively over the physical wire.
 const SEND_QUEUE_CAPACITY: usize = 8;
+const MAX_PACKET_SIZE: usize = 250;
 const RECEIVE_QUEUE_CAPACITY: usize = 8;
 const SEND_RETRY_DELAY_MS: u32 = 10;
 const SEND_SPACING_MS: u32 = 20;
@@ -30,13 +29,14 @@ const RX_STACK_SIZE: usize = 10 * 1024;
 
 struct OutgoingPacket {
     peer_address: [u8; 6],
-    buffer: [u8; 250],
+    buffer: [u8; MAX_PACKET_SIZE],
     length: usize,
 }
 
 struct IncomingPacket {
     peer_address: [u8; 6],
-    data: Vec<u8>,
+    buffer: [u8; MAX_PACKET_SIZE],
+    length: usize,
 }
 
 pub struct EspNow {
@@ -68,59 +68,15 @@ fn transmit_packets(radio: Arc<EspIdfEspNow<'static>>, packets: Receiver<Outgoin
 }
 
 fn receive_packets(
-    esp_now: Arc<EspNow>,
     packets: Receiver<IncomingPacket>,
-    saved_state: Arc<Mutex<SavedState>>,
-    runtime_state: Arc<Mutex<RuntimeState>>,
-    mut on_snapshot: impl FnMut(DeviceId, BikeSnapshot),
+    mut on_message: impl FnMut([u8; 6], Message),
 ) {
     while let Ok(packet) = packets.recv() {
-        let Ok(message) = Message::decode(&packet.data) else {
+        let Ok(message) = Message::decode(&packet.buffer[..packet.length]) else {
             continue;
         };
 
-        let device = {
-            let state = saved_state.lock().expect("saved state mutex poisoned");
-
-            state
-                .peers
-                .iter()
-                .find(|peer| peer.mac == packet.peer_address)
-                .map(|peer| peer.device)
-        };
-
-        let Some(device) = device else {
-            println!(
-                "Ignoring ESP-NOW message from unknown peer {:02X?}",
-                packet.peer_address
-            );
-            continue;
-        };
-
-        runtime_state
-            .lock()
-            .expect("runtime state mutex poisoned")
-            .mark_seen(device);
-
-        match message {
-            Message::Ping(ping) => {
-                let pong = Message::Pong(Pong {
-                    sequence: ping.sequence,
-                });
-
-                if let Err(error) = esp_now.send(packet.peer_address, &pong) {
-                    println!("Failed to send Pong to {:?}: {error:#}", device);
-                }
-            }
-
-            Message::Pong(pong) => {
-                println!("Pong from {:?}, sequence {}", device, pong.sequence);
-            }
-
-            Message::BikeSnapshot(snapshot) => {
-                on_snapshot(device, snapshot);
-            }
-        }
+        on_message(packet.peer_address, message);
     }
 }
 
@@ -163,7 +119,7 @@ impl EspNow {
     /// Success means the local queue accepted the packet. The transmitter
     /// spaces ESP-IDF calls apart to avoid exhausting Wi-Fi buffers.
     pub fn send(&self, peer_address: [u8; 6], message: &Message) -> anyhow::Result<()> {
-        let mut buffer = [0u8; 250];
+        let mut buffer = [0u8; MAX_PACKET_SIZE];
         let length = message.encode(&mut buffer)?;
         let packet = OutgoingPacket {
             peer_address,
@@ -180,32 +136,36 @@ impl EspNow {
         }
     }
 
-    /// Registers a callback for bike snapshots received over ESP-NOW.
+    /// Registers a callback for valid normal messages received over ESP-NOW.
     ///
-    /// Invalid packets, including pairing packets, are ignored. Ping and Pong
-    /// are handled here; bike snapshots are passed to `on_snapshot`.
-    /// The Wi-Fi task only copies packets into a queue. Decoding, state updates,
-    /// logging, and responses run on a separate task with enough stack.
+    /// Invalid packets, including pairing packets, are ignored. The Wi-Fi task
+    /// only copies packets into a queue; decoding and the callback run on a
+    /// separate task with enough stack.
     pub fn on_receive(
-        self: &Arc<Self>,
-        saved_state: Arc<Mutex<SavedState>>,
-        runtime_state: Arc<Mutex<RuntimeState>>,
-        on_snapshot: impl FnMut(DeviceId, BikeSnapshot) + Send + 'static,
+        &self,
+        on_message: impl FnMut([u8; 6], Message) + Send + 'static,
     ) -> anyhow::Result<()> {
         let (receive_queue, packets) = sync_channel(RECEIVE_QUEUE_CAPACITY);
-        let esp_now = Arc::clone(self);
 
         thread::Builder::new()
             .name("esp-now-rx".into())
             .stack_size(RX_STACK_SIZE)
             .spawn(move || {
-                receive_packets(esp_now, packets, saved_state, runtime_state, on_snapshot);
+                receive_packets(packets, on_message);
             })?;
 
         self.radio.register_recv_cb(move |info, data| {
+            if data.len() > MAX_PACKET_SIZE {
+                return;
+            }
+
+            let mut buffer = [0u8; MAX_PACKET_SIZE];
+            buffer[..data.len()].copy_from_slice(data);
+
             let packet = IncomingPacket {
                 peer_address: *info.src_addr,
-                data: data.to_vec(),
+                buffer,
+                length: data.len(),
             };
 
             // ESP-NOW is lossy. Never block or log from the Wi-Fi task.
@@ -213,9 +173,5 @@ impl EspNow {
         })?;
 
         Ok(())
-    }
-
-    pub fn send_ping(&self, peer_address: [u8; 6], sequence: u16) -> anyhow::Result<()> {
-        self.send(peer_address, &Message::Ping(Ping { sequence }))
     }
 }

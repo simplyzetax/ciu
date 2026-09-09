@@ -1,22 +1,19 @@
-use std::sync::Mutex;
-
 use anyhow::Context;
 use ciu_core::iec::protocol::{DeviceId, PairAck, PairHello, PairingMessage, WireMessage};
 
 use crate::{
-    saved_state::{SavedState, StateStore},
+    network::Network,
     wire::{Wire, WireIo},
 };
 
-/// Goggle side of pairing.
+/// Goggle side of the physical pairing handshake.
 ///
-/// Waits for a helmet hello, persists its ESP-NOW STA MAC, then acknowledges
-/// with the goggle's ESP-NOW STA MAC.
+/// Waits for a helmet hello, persists its ESP-NOW station MAC, then
+/// acknowledges it with the goggle's station MAC.
 pub fn pair_as_goggle<Io>(
     wire: &mut Wire<Io>,
     my_mac: [u8; 6],
-    state: &Mutex<SavedState>,
-    store: &mut StateStore,
+    network: &Network,
 ) -> anyhow::Result<[u8; 6]>
 where
     Io: WireIo,
@@ -31,12 +28,7 @@ where
         anyhow::bail!("expected Helmet, got {:?}", hello.device);
     }
 
-    {
-        let mut state = state.lock().expect("saved state mutex poisoned");
-
-        state.set_peer(DeviceId::Helmet, hello.mac);
-        store.save(&state).context("persisting helmet peer")?;
-    }
+    network.add_peer(DeviceId::Helmet, hello.mac)?;
 
     wire.send_pairing(&PairingMessage::Ack(PairAck {
         device: DeviceId::Goggle,
@@ -47,15 +39,14 @@ where
     Ok(hello.mac)
 }
 
-/// Helmet side of pairing.
+/// Helmet side of the physical pairing handshake.
 ///
-/// Sends the helmet's ESP-NOW STA MAC, waits for a goggle acknowledgement,
-/// validates it, and persists the goggle's ESP-NOW STA MAC.
+/// Sends the helmet's ESP-NOW station MAC, then waits for and validates a
+/// goggle acknowledgement before persisting the peer.
 pub fn pair_as_helmet<Io>(
     wire: &mut Wire<Io>,
     my_mac: [u8; 6],
-    state: &Mutex<SavedState>,
-    store: &mut StateStore,
+    network: &Network,
 ) -> anyhow::Result<[u8; 6]>
 where
     Io: WireIo,
@@ -76,10 +67,7 @@ where
         anyhow::bail!("expected Goggle, got {:?}", ack.device);
     }
 
-    let mut state = state.lock().expect("saved state mutex poisoned");
-
-    state.set_peer(DeviceId::Goggle, ack.mac);
-    store.save(&state).context("persisting goggle peer")?;
+    network.add_peer(DeviceId::Goggle, ack.mac)?;
 
     Ok(ack.mac)
 }

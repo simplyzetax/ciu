@@ -6,7 +6,7 @@ fn main() -> anyhow::Result<()> {
     let peripherals = Peripherals::take()?;
     let mut led = PinDriver::output(peripherals.pins.gpio2)?;
 
-    let _wifi = ciu_esp32::wifi::start(peripherals.modem, ciu_esp32::wifi::WIFI_CHANNEL)?;
+    let _wifi = ciu_esp32::wifi::start(peripherals.modem)?;
 
     loop {
         led.set_high()?;

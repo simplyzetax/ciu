@@ -7,7 +7,7 @@ use esp_idf_svc::{
 
 pub const WIFI_CHANNEL: u8 = 2;
 
-pub fn start(modem: Modem<'static>, channel: u8) -> anyhow::Result<EspWifi<'static>> {
+pub fn start(modem: Modem<'static>) -> anyhow::Result<EspWifi<'static>> {
     let sysloop = EspSystemEventLoop::take()?;
 
     let mut wifi = EspWifi::new(modem, sysloop.clone(), None)?;
@@ -16,7 +16,7 @@ pub fn start(modem: Modem<'static>, channel: u8) -> anyhow::Result<EspWifi<'stat
 
     wifi.start()?;
 
-    set_channel(channel)?;
+    set_channel(WIFI_CHANNEL)?;
 
     Ok(wifi)
 }
