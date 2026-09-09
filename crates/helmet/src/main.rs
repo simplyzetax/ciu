@@ -31,7 +31,7 @@ fn run() -> anyhow::Result<()> {
     let bike_state = Arc::new(Mutex::new(BikeSnapshot::default()));
     let received_bike_state = Arc::clone(&bike_state);
 
-    network.on_snapshot(move |device, snapshot| {
+    network.on_message(move |device, snapshot| {
         println!("Helmet ESP-NOW RX from {:?}: {:?}", device, snapshot);
 
         if device == DeviceId::Bike {

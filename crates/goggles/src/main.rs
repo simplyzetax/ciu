@@ -21,7 +21,7 @@ fn run() -> anyhow::Result<()> {
     let my_mac = ciu_esp32::wifi::station_mac(&wifi)?;
 
     let network = Network::new()?;
-    network.on_snapshot(|device, snapshot| {
+    network.on_message(|device, snapshot| {
         if device == DeviceId::Helmet {
             //TODO: Display in HUD when OLED arrives
             println!("Goggles HUD snapshot: {:?}", snapshot);

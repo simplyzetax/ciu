@@ -36,7 +36,7 @@ impl Network {
     }
 
     /// Handles Ping and Pong internally and forwards bike snapshots to the app.
-    pub fn on_snapshot(
+    pub fn on_message(
         self: &Arc<Self>,
         mut callback: impl FnMut(DeviceId, BikeSnapshot) + Send + 'static,
     ) -> anyhow::Result<()> {
