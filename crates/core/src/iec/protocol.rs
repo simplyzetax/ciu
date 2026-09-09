@@ -197,6 +197,8 @@ pub enum Message {
     Pong(Pong),
 }
 impl Message {
+    pub const MAX_ENCODED_LEN: usize = MessageType::BikeSnapshot.encoded_len();
+
     pub fn message_type(&self) -> MessageType {
         match self {
             Self::BikeSnapshot(_) => MessageType::BikeSnapshot,

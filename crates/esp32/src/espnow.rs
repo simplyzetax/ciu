@@ -20,7 +20,7 @@ use ciu_core::iec::protocol::Message;
 /// Pairing messages are intentionally not supported here; pairing is
 /// performed exclusively over the physical wire.
 const SEND_QUEUE_CAPACITY: usize = 8;
-const MAX_PACKET_SIZE: usize = 250;
+const MAX_PACKET_SIZE: usize = Message::MAX_ENCODED_LEN;
 const RECEIVE_QUEUE_CAPACITY: usize = 8;
 const SEND_RETRY_DELAY_MS: u32 = 10;
 const SEND_SPACING_MS: u32 = 20;
