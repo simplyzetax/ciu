@@ -10,7 +10,7 @@ use ciu_esp32::{
 };
 use esp_idf_hal::{delay::FreeRtos, gpio::PinDriver, peripherals::Peripherals};
 
-use crate::state::{BikeSnapshot, BikeState};
+use crate::state::BikeState;
 
 const APP_STACK_SIZE: usize = 10 * 1024;
 const PAIRING_STACK_SIZE: usize = 8 * 1024;
@@ -60,11 +60,12 @@ fn run() -> anyhow::Result<()> {
         }
     }
 
+    let mut bike_state = BikeState::default();
+
     esp_now.on_receive(
         Arc::clone(&saved_state),
         Arc::clone(&runtime_state),
-        |device, message| {
-            let mut bike_state = BikeState::default();
+        move |device, message| {
             println!("Goggles ESP-NOW RX from {:?}: {:?}", device, message);
             match message {
                 ApplicationMessage::Throttle(v) => {
@@ -81,6 +82,12 @@ fn run() -> anyhow::Result<()> {
                 }
                 ApplicationMessage::Rpm(v) => {
                     bike_state.update(|c| c.rpm = Some(v.amount));
+                }
+                ApplicationMessage::Gear(v) => {
+                    bike_state.update(|c| c.gear = Some(v.number));
+                }
+                ApplicationMessage::Speed(v) => {
+                    bike_state.update(|c| c.speed = Some(v.amount));
                 }
             }
         },

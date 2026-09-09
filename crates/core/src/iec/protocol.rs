@@ -15,6 +15,8 @@
 //! - RPM:        `[3, low_byte, high_byte]`
 //! - Clutch:     `[4, engaged]`
 //! - KillSwitch: `[5, engaged]`
+//! - Gear:       `[9, number]`
+//! - Speed:      `[10, byte_0, byte_1, byte_2, byte_3]`
 //!
 //! # Wire-only pairing messages
 //!
@@ -78,6 +80,8 @@ pub enum MessageType {
     Pairing = 6,
     Ping = 7,
     Pong = 8,
+    Gear = 9,
+    Speed = 10,
 }
 
 impl TryFrom<u8> for MessageType {
@@ -93,6 +97,8 @@ impl TryFrom<u8> for MessageType {
             6 => Ok(Self::Pairing),
             7 => Ok(Self::Ping),
             8 => Ok(Self::Pong),
+            9 => Ok(Self::Gear),
+            10 => Ok(Self::Speed),
             _ => Err(ProtocolError::InvalidMessageType(value)),
         }
     }
@@ -113,6 +119,8 @@ impl MessageType {
             // type + u16 sequence
             Self::Ping => 3,
             Self::Pong => 3,
+            Self::Gear => 2,
+            Self::Speed => 5,
         }
     }
 }
@@ -157,6 +165,16 @@ pub struct KillSwitch {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Gear {
+    pub number: u8,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Speed {
+    pub amount: u32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ping {
     pub sequence: u16,
 }
@@ -174,6 +192,8 @@ pub enum ApplicationMessage {
     Rpm(Rpm),
     Clutch(Clutch),
     KillSwitch(KillSwitch),
+    Gear(Gear),
+    Speed(Speed),
 }
 
 /// A normal CIU message.
@@ -186,6 +206,8 @@ pub enum Message {
     Rpm(Rpm),
     Clutch(Clutch),
     KillSwitch(KillSwitch),
+    Gear(Gear),
+    Speed(Speed),
     Ping(Ping),
     Pong(Pong),
 }
@@ -197,6 +219,8 @@ impl Message {
             Self::Rpm(_) => MessageType::Rpm,
             Self::Clutch(_) => MessageType::Clutch,
             Self::KillSwitch(_) => MessageType::KillSwitch,
+            Self::Gear(_) => MessageType::Gear,
+            Self::Speed(_) => MessageType::Speed,
             Self::Ping(_) => MessageType::Ping,
             Self::Pong(_) => MessageType::Pong,
         }
@@ -231,6 +255,14 @@ impl Message {
 
             Self::KillSwitch(kill_switch) => {
                 buffer[1] = u8::from(kill_switch.engaged);
+            }
+
+            Self::Gear(gear) => {
+                buffer[1] = gear.number;
+            }
+
+            Self::Speed(speed) => {
+                buffer[1..5].copy_from_slice(&speed.amount.to_le_bytes());
             }
 
             Self::Ping(ping) => {
@@ -282,6 +314,12 @@ impl Message {
 
             MessageType::KillSwitch => Ok(Self::KillSwitch(KillSwitch {
                 engaged: decode_bool(data[1])?,
+            })),
+
+            MessageType::Gear => Ok(Self::Gear(Gear { number: data[1] })),
+
+            MessageType::Speed => Ok(Self::Speed(Speed {
+                amount: u32::from_le_bytes([data[1], data[2], data[3], data[4]]),
             })),
 
             MessageType::Ping => Ok(Self::Ping(Ping {
@@ -440,6 +478,13 @@ mod tests {
             (Message::Clutch(Clutch { engaged: true }), &[4, 1]),
             (Message::KillSwitch(KillSwitch { engaged: false }), &[5, 0]),
             (Message::KillSwitch(KillSwitch { engaged: true }), &[5, 1]),
+            (Message::Gear(Gear { number: 6 }), &[9, 6]),
+            (
+                Message::Speed(Speed {
+                    amount: 0x1234_5678,
+                }),
+                &[10, 0x78, 0x56, 0x34, 0x12],
+            ),
         ];
 
         for &(message, wire) in cases {
@@ -581,6 +626,8 @@ mod tests {
             &[3, 0x34, 0x12],
             &[4, 1],
             &[5, 0],
+            &[9, 6],
+            &[10, 0x78, 0x56, 0x34, 0x12],
         ];
 
         for packet in packets {
@@ -595,6 +642,8 @@ mod tests {
             &[3, 0x34, 0x12, 0][..],
             &[4, 1, 0][..],
             &[5, 0, 0][..],
+            &[9, 6, 0][..],
+            &[10, 0x78, 0x56, 0x34, 0x12, 0][..],
         ] {
             assert_eq!(Message::decode(packet), Err(ProtocolError::InvalidPayload));
         }

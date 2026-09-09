@@ -132,6 +132,12 @@ fn receive_packets(
             Message::KillSwitch(value) => {
                 on_message(device, ApplicationMessage::KillSwitch(value));
             }
+            Message::Gear(value) => {
+                on_message(device, ApplicationMessage::Gear(value));
+            }
+            Message::Speed(value) => {
+                on_message(device, ApplicationMessage::Speed(value));
+            }
         }
     }
 }
