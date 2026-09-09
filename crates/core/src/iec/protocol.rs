@@ -166,6 +166,16 @@ pub struct Pong {
     pub sequence: u16,
 }
 
+/// A CIU message delivered to application code.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ApplicationMessage {
+    Throttle(Throttle),
+    ABS(ABSMode),
+    Rpm(Rpm),
+    Clutch(Clutch),
+    KillSwitch(KillSwitch),
+}
+
 /// A normal CIU message.
 ///
 /// These messages may be transported over both ESP-NOW and the physical wire.

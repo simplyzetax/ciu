@@ -1,12 +1,16 @@
+mod state;
+
 use std::sync::{Arc, Mutex};
 
-use ciu_core::iec::protocol::DeviceId;
+use ciu_core::iec::protocol::{ApplicationMessage, DeviceId};
 use ciu_esp32::{
     pairing::pair_as_goggle,
     saved_state::{PeerRuntime, RuntimeState, StateStore},
     wire::{GpioWireIo, Wire},
 };
 use esp_idf_hal::{delay::FreeRtos, gpio::PinDriver, peripherals::Peripherals};
+
+use crate::state::{BikeSnapshot, BikeState};
 
 const APP_STACK_SIZE: usize = 10 * 1024;
 const PAIRING_STACK_SIZE: usize = 8 * 1024;
@@ -60,7 +64,25 @@ fn run() -> anyhow::Result<()> {
         Arc::clone(&saved_state),
         Arc::clone(&runtime_state),
         |device, message| {
+            let mut bike_state = BikeState::default();
             println!("Goggles ESP-NOW RX from {:?}: {:?}", device, message);
+            match message {
+                ApplicationMessage::Throttle(v) => {
+                    bike_state.update(|c| c.throttle = Some(v.amount));
+                }
+                ApplicationMessage::ABS(v) => {
+                    bike_state.update(|c| c.abs_mode = Some(v));
+                }
+                ApplicationMessage::Clutch(v) => {
+                    bike_state.update(|c| c.clutch = Some(v.engaged));
+                }
+                ApplicationMessage::KillSwitch(v) => {
+                    bike_state.update(|c| c.kill_switch = Some(v.engaged));
+                }
+                ApplicationMessage::Rpm(v) => {
+                    bike_state.update(|c| c.rpm = Some(v.amount));
+                }
+            }
         },
     )?;
 

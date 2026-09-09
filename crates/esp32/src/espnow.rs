@@ -12,7 +12,7 @@ use esp_idf_svc::{
     sys::ESP_ERR_ESPNOW_NO_MEM,
 };
 
-use ciu_core::iec::protocol::{DeviceId, Message, Ping, Pong};
+use ciu_core::iec::protocol::{ApplicationMessage, DeviceId, Message, Ping, Pong};
 
 use crate::saved_state::{RuntimeState, SavedState};
 
@@ -72,7 +72,7 @@ fn receive_packets(
     packets: Receiver<IncomingPacket>,
     saved_state: Arc<Mutex<SavedState>>,
     runtime_state: Arc<Mutex<RuntimeState>>,
-    mut on_message: impl FnMut(DeviceId, Message),
+    mut on_message: impl FnMut(DeviceId, ApplicationMessage),
 ) {
     while let Ok(packet) = packets.recv() {
         let Ok(message) = Message::decode(&packet.data) else {
@@ -117,7 +117,21 @@ fn receive_packets(
                 println!("Pong from {:?}, sequence {}", device, pong.sequence);
             }
 
-            other => on_message(device, other),
+            Message::Throttle(value) => {
+                on_message(device, ApplicationMessage::Throttle(value));
+            }
+            Message::ABS(value) => {
+                on_message(device, ApplicationMessage::ABS(value));
+            }
+            Message::Rpm(value) => {
+                on_message(device, ApplicationMessage::Rpm(value));
+            }
+            Message::Clutch(value) => {
+                on_message(device, ApplicationMessage::Clutch(value));
+            }
+            Message::KillSwitch(value) => {
+                on_message(device, ApplicationMessage::KillSwitch(value));
+            }
         }
     }
 }
@@ -188,7 +202,7 @@ impl EspNow {
         self: &Arc<Self>,
         saved_state: Arc<Mutex<SavedState>>,
         runtime_state: Arc<Mutex<RuntimeState>>,
-        on_message: impl FnMut(DeviceId, Message) + Send + 'static,
+        on_message: impl FnMut(DeviceId, ApplicationMessage) + Send + 'static,
     ) -> anyhow::Result<()> {
         let (receive_queue, packets) = sync_channel(RECEIVE_QUEUE_CAPACITY);
         let esp_now = Arc::clone(self);
