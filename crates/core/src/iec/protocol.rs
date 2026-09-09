@@ -10,13 +10,7 @@
 //!
 //! # Normal messages
 //!
-//! - Throttle:   `[1, amount]`
-//! - ABS:        `[2, mode]`
-//! - RPM:        `[3, low_byte, high_byte]`
-//! - Clutch:     `[4, engaged]`
-//! - KillSwitch: `[5, engaged]`
-//! - Gear:       `[9, number]`
-//! - Speed:      `[10, byte_0, byte_1, byte_2, byte_3]`
+//! - BikeSnapshot: `[11, present_fields, gear, rpm..., speed..., clutch, throttle, kill_switch, abs]`
 //!
 //! # Wire-only pairing messages
 //!
@@ -72,16 +66,10 @@ impl TryFrom<u8> for DeviceId {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum MessageType {
-    Throttle = 1,
-    ABS = 2,
-    Rpm = 3,
-    Clutch = 4,
-    KillSwitch = 5,
     Pairing = 6,
     Ping = 7,
     Pong = 8,
-    Gear = 9,
-    Speed = 10,
+    BikeSnapshot = 11,
 }
 
 impl TryFrom<u8> for MessageType {
@@ -89,16 +77,10 @@ impl TryFrom<u8> for MessageType {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            1 => Ok(Self::Throttle),
-            2 => Ok(Self::ABS),
-            3 => Ok(Self::Rpm),
-            4 => Ok(Self::Clutch),
-            5 => Ok(Self::KillSwitch),
             6 => Ok(Self::Pairing),
             7 => Ok(Self::Ping),
             8 => Ok(Self::Pong),
-            9 => Ok(Self::Gear),
-            10 => Ok(Self::Speed),
+            11 => Ok(Self::BikeSnapshot),
             _ => Err(ProtocolError::InvalidMessageType(value)),
         }
     }
@@ -107,20 +89,14 @@ impl TryFrom<u8> for MessageType {
 impl MessageType {
     const fn encoded_len(self) -> usize {
         match self {
-            Self::Throttle => 2,
-            Self::ABS => 2,
-            Self::Rpm => 3,
-            Self::Clutch => 2,
-            Self::KillSwitch => 2,
-
             // type + pairing type + device + MAC
             Self::Pairing => 1 + 1 + 1 + 6,
 
             // type + u16 sequence
-            Self::Ping => 3,
-            Self::Pong => 3,
-            Self::Gear => 2,
-            Self::Speed => 5,
+            Self::Ping | Self::Pong => 3,
+
+            // type + present-fields mask + fixed field storage
+            Self::BikeSnapshot => 13,
         }
     }
 }
@@ -144,35 +120,62 @@ impl TryFrom<u8> for ABSMode {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Throttle {
-    pub amount: u8,
+/// Bike telemetry carried between CIU devices.
+///
+/// A producer may send only changed fields. The Helmet merges those partial
+/// updates, then periodically sends its complete current view to the Goggles.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct BikeSnapshot {
+    pub gear: Option<u8>,
+    pub rpm: Option<u16>,
+    pub speed: Option<u32>,
+    pub clutch: Option<bool>,
+    pub throttle: Option<u8>,
+    pub kill_switch: Option<bool>,
+    pub abs_mode: Option<ABSMode>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Rpm {
-    pub amount: u16,
+impl BikeSnapshot {
+    /// Replaces each field included in `update` and keeps every omitted field.
+    pub fn merge(&mut self, update: Self) {
+        if let Some(gear) = update.gear {
+            self.gear = Some(gear);
+        }
+        if let Some(rpm) = update.rpm {
+            self.rpm = Some(rpm);
+        }
+        if let Some(speed) = update.speed {
+            self.speed = Some(speed);
+        }
+        if let Some(clutch) = update.clutch {
+            self.clutch = Some(clutch);
+        }
+        if let Some(throttle) = update.throttle {
+            self.throttle = Some(throttle);
+        }
+        if let Some(kill_switch) = update.kill_switch {
+            self.kill_switch = Some(kill_switch);
+        }
+        if let Some(abs_mode) = update.abs_mode {
+            self.abs_mode = Some(abs_mode);
+        }
+    }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Clutch {
-    pub engaged: bool,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct KillSwitch {
-    pub engaged: bool,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Gear {
-    pub number: u8,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Speed {
-    pub amount: u32,
-}
+const BIKE_SNAPSHOT_GEAR_PRESENT: u8 = 1 << 0;
+const BIKE_SNAPSHOT_RPM_PRESENT: u8 = 1 << 1;
+const BIKE_SNAPSHOT_SPEED_PRESENT: u8 = 1 << 2;
+const BIKE_SNAPSHOT_CLUTCH_PRESENT: u8 = 1 << 3;
+const BIKE_SNAPSHOT_THROTTLE_PRESENT: u8 = 1 << 4;
+const BIKE_SNAPSHOT_KILL_SWITCH_PRESENT: u8 = 1 << 5;
+const BIKE_SNAPSHOT_ABS_MODE_PRESENT: u8 = 1 << 6;
+const BIKE_SNAPSHOT_ALL_FIELDS: u8 = BIKE_SNAPSHOT_GEAR_PRESENT
+    | BIKE_SNAPSHOT_RPM_PRESENT
+    | BIKE_SNAPSHOT_SPEED_PRESENT
+    | BIKE_SNAPSHOT_CLUTCH_PRESENT
+    | BIKE_SNAPSHOT_THROTTLE_PRESENT
+    | BIKE_SNAPSHOT_KILL_SWITCH_PRESENT
+    | BIKE_SNAPSHOT_ABS_MODE_PRESENT;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Ping {
@@ -184,43 +187,19 @@ pub struct Pong {
     pub sequence: u16,
 }
 
-/// A CIU message delivered to application code.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ApplicationMessage {
-    Throttle(Throttle),
-    ABS(ABSMode),
-    Rpm(Rpm),
-    Clutch(Clutch),
-    KillSwitch(KillSwitch),
-    Gear(Gear),
-    Speed(Speed),
-}
-
 /// A normal CIU message.
 ///
 /// These messages may be transported over both ESP-NOW and the physical wire.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Message {
-    Throttle(Throttle),
-    ABS(ABSMode),
-    Rpm(Rpm),
-    Clutch(Clutch),
-    KillSwitch(KillSwitch),
-    Gear(Gear),
-    Speed(Speed),
+    BikeSnapshot(BikeSnapshot),
     Ping(Ping),
     Pong(Pong),
 }
 impl Message {
     pub fn message_type(&self) -> MessageType {
         match self {
-            Self::Throttle(_) => MessageType::Throttle,
-            Self::ABS(_) => MessageType::ABS,
-            Self::Rpm(_) => MessageType::Rpm,
-            Self::Clutch(_) => MessageType::Clutch,
-            Self::KillSwitch(_) => MessageType::KillSwitch,
-            Self::Gear(_) => MessageType::Gear,
-            Self::Speed(_) => MessageType::Speed,
+            Self::BikeSnapshot(_) => MessageType::BikeSnapshot,
             Self::Ping(_) => MessageType::Ping,
             Self::Pong(_) => MessageType::Pong,
         }
@@ -237,32 +216,40 @@ impl Message {
         buffer[0] = self.message_type() as u8;
 
         match self {
-            Self::Throttle(throttle) => {
-                buffer[1] = throttle.amount;
-            }
+            Self::BikeSnapshot(snapshot) => {
+                buffer[1..packet_length].fill(0);
+                let mut present_fields = 0;
 
-            Self::ABS(mode) => {
-                buffer[1] = *mode as u8;
-            }
+                if let Some(gear) = snapshot.gear {
+                    present_fields |= BIKE_SNAPSHOT_GEAR_PRESENT;
+                    buffer[2] = gear;
+                }
+                if let Some(rpm) = snapshot.rpm {
+                    present_fields |= BIKE_SNAPSHOT_RPM_PRESENT;
+                    buffer[3..5].copy_from_slice(&rpm.to_le_bytes());
+                }
+                if let Some(speed) = snapshot.speed {
+                    present_fields |= BIKE_SNAPSHOT_SPEED_PRESENT;
+                    buffer[5..9].copy_from_slice(&speed.to_le_bytes());
+                }
+                if let Some(clutch) = snapshot.clutch {
+                    present_fields |= BIKE_SNAPSHOT_CLUTCH_PRESENT;
+                    buffer[9] = u8::from(clutch);
+                }
+                if let Some(throttle) = snapshot.throttle {
+                    present_fields |= BIKE_SNAPSHOT_THROTTLE_PRESENT;
+                    buffer[10] = throttle;
+                }
+                if let Some(kill_switch) = snapshot.kill_switch {
+                    present_fields |= BIKE_SNAPSHOT_KILL_SWITCH_PRESENT;
+                    buffer[11] = u8::from(kill_switch);
+                }
+                if let Some(abs_mode) = snapshot.abs_mode {
+                    present_fields |= BIKE_SNAPSHOT_ABS_MODE_PRESENT;
+                    buffer[12] = abs_mode as u8;
+                }
 
-            Self::Rpm(rpm) => {
-                buffer[1..3].copy_from_slice(&rpm.amount.to_le_bytes());
-            }
-
-            Self::Clutch(clutch) => {
-                buffer[1] = u8::from(clutch.engaged);
-            }
-
-            Self::KillSwitch(kill_switch) => {
-                buffer[1] = u8::from(kill_switch.engaged);
-            }
-
-            Self::Gear(gear) => {
-                buffer[1] = gear.number;
-            }
-
-            Self::Speed(speed) => {
-                buffer[1..5].copy_from_slice(&speed.amount.to_le_bytes());
+                buffer[1] = present_fields;
             }
 
             Self::Ping(ping) => {
@@ -300,27 +287,59 @@ impl Message {
         }
 
         match message_type {
-            MessageType::Throttle => Ok(Self::Throttle(Throttle { amount: data[1] })),
+            MessageType::BikeSnapshot => {
+                let present_fields = data[1];
 
-            MessageType::ABS => Ok(Self::ABS(ABSMode::try_from(data[1])?)),
+                if present_fields & !BIKE_SNAPSHOT_ALL_FIELDS != 0 {
+                    return Err(ProtocolError::InvalidPayload);
+                }
 
-            MessageType::Rpm => Ok(Self::Rpm(Rpm {
-                amount: u16::from_le_bytes([data[1], data[2]]),
-            })),
+                let gear = if present_fields & BIKE_SNAPSHOT_GEAR_PRESENT != 0 {
+                    Some(data[2])
+                } else {
+                    None
+                };
+                let rpm = if present_fields & BIKE_SNAPSHOT_RPM_PRESENT != 0 {
+                    Some(u16::from_le_bytes([data[3], data[4]]))
+                } else {
+                    None
+                };
+                let speed = if present_fields & BIKE_SNAPSHOT_SPEED_PRESENT != 0 {
+                    Some(u32::from_le_bytes([data[5], data[6], data[7], data[8]]))
+                } else {
+                    None
+                };
+                let clutch = if present_fields & BIKE_SNAPSHOT_CLUTCH_PRESENT != 0 {
+                    Some(decode_bool(data[9])?)
+                } else {
+                    None
+                };
+                let throttle = if present_fields & BIKE_SNAPSHOT_THROTTLE_PRESENT != 0 {
+                    Some(data[10])
+                } else {
+                    None
+                };
+                let kill_switch = if present_fields & BIKE_SNAPSHOT_KILL_SWITCH_PRESENT != 0 {
+                    Some(decode_bool(data[11])?)
+                } else {
+                    None
+                };
+                let abs_mode = if present_fields & BIKE_SNAPSHOT_ABS_MODE_PRESENT != 0 {
+                    Some(ABSMode::try_from(data[12])?)
+                } else {
+                    None
+                };
 
-            MessageType::Clutch => Ok(Self::Clutch(Clutch {
-                engaged: decode_bool(data[1])?,
-            })),
-
-            MessageType::KillSwitch => Ok(Self::KillSwitch(KillSwitch {
-                engaged: decode_bool(data[1])?,
-            })),
-
-            MessageType::Gear => Ok(Self::Gear(Gear { number: data[1] })),
-
-            MessageType::Speed => Ok(Self::Speed(Speed {
-                amount: u32::from_le_bytes([data[1], data[2], data[3], data[4]]),
-            })),
+                Ok(Self::BikeSnapshot(BikeSnapshot {
+                    gear,
+                    rpm,
+                    speed,
+                    clutch,
+                    throttle,
+                    kill_switch,
+                    abs_mode,
+                }))
+            }
 
             MessageType::Ping => Ok(Self::Ping(Ping {
                 sequence: u16::from_le_bytes([data[1], data[2]]),
@@ -470,21 +489,22 @@ mod tests {
     #[test]
     fn normal_messages_round_trip() {
         let cases: &[(Message, &[u8])] = &[
-            (Message::Throttle(Throttle { amount: 255 }), &[1, 255]),
-            (Message::ABS(ABSMode::Street), &[2, 1]),
-            (Message::ABS(ABSMode::Supermoto), &[2, 2]),
-            (Message::Rpm(Rpm { amount: 0x1234 }), &[3, 0x34, 0x12]),
-            (Message::Clutch(Clutch { engaged: false }), &[4, 0]),
-            (Message::Clutch(Clutch { engaged: true }), &[4, 1]),
-            (Message::KillSwitch(KillSwitch { engaged: false }), &[5, 0]),
-            (Message::KillSwitch(KillSwitch { engaged: true }), &[5, 1]),
-            (Message::Gear(Gear { number: 6 }), &[9, 6]),
             (
-                Message::Speed(Speed {
-                    amount: 0x1234_5678,
+                Message::BikeSnapshot(BikeSnapshot {
+                    gear: Some(6),
+                    rpm: Some(0x1234),
+                    speed: Some(0x1234_5678),
+                    clutch: Some(true),
+                    throttle: Some(255),
+                    kill_switch: Some(false),
+                    abs_mode: Some(ABSMode::Supermoto),
                 }),
-                &[10, 0x78, 0x56, 0x34, 0x12],
+                &[
+                    11, 0x7F, 6, 0x34, 0x12, 0x78, 0x56, 0x34, 0x12, 1, 255, 0, 2,
+                ],
             ),
+            (Message::Ping(Ping { sequence: 0x1234 }), &[7, 0x34, 0x12]),
+            (Message::Pong(Pong { sequence: 0x5678 }), &[8, 0x78, 0x56]),
         ];
 
         for &(message, wire) in cases {
@@ -494,15 +514,70 @@ mod tests {
 
             assert_eq!(&buffer[..len], wire);
             assert_eq!(Message::decode(wire).unwrap(), message);
-
             assert!(buffer[len..].iter().all(|&byte| byte == 0xAA));
         }
     }
 
     #[test]
-    fn normal_messages_can_travel_over_wire() {
-        let message = Message::Rpm(Rpm { amount: 5000 });
+    fn bike_snapshot_preserves_unknown_fields() {
+        let message = Message::BikeSnapshot(BikeSnapshot {
+            speed: Some(123),
+            ..BikeSnapshot::default()
+        });
+        let expected = [
+            11,
+            BIKE_SNAPSHOT_SPEED_PRESENT,
+            0,
+            0,
+            0,
+            123,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ];
 
+        let mut buffer = [0xAA; 32];
+        let len = message.encode(&mut buffer).unwrap();
+
+        assert_eq!(&buffer[..len], &expected);
+        assert_eq!(Message::decode(&expected).unwrap(), message);
+    }
+
+    #[test]
+    fn bike_snapshot_merges_partial_updates() {
+        let mut state = BikeSnapshot {
+            gear: Some(3),
+            speed: Some(50),
+            ..BikeSnapshot::default()
+        };
+
+        state.merge(BikeSnapshot {
+            rpm: Some(4_500),
+            speed: Some(60),
+            ..BikeSnapshot::default()
+        });
+
+        assert_eq!(
+            state,
+            BikeSnapshot {
+                gear: Some(3),
+                rpm: Some(4_500),
+                speed: Some(60),
+                ..BikeSnapshot::default()
+            },
+        );
+    }
+
+    #[test]
+    fn normal_messages_can_travel_over_wire() {
+        let message = Message::BikeSnapshot(BikeSnapshot {
+            rpm: Some(5_000),
+            ..BikeSnapshot::default()
+        });
         let wire_message = WireMessage::from(message);
 
         let mut buffer = [0; 32];
@@ -576,8 +651,40 @@ mod tests {
 
     #[test]
     fn rejects_invalid_values() {
-        for wire in [&[2, 0][..], &[2, 3][..], &[4, 2][..], &[5, 2][..]] {
-            assert_eq!(Message::decode(wire), Err(ProtocolError::InvalidPayload),);
+        for wire in [
+            &[11, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][..],
+            &[
+                11,
+                BIKE_SNAPSHOT_CLUTCH_PRESENT,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+            ][..],
+            &[
+                11,
+                BIKE_SNAPSHOT_ABS_MODE_PRESENT,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                3,
+            ][..],
+        ] {
+            assert_eq!(Message::decode(wire), Err(ProtocolError::InvalidPayload));
         }
     }
 
@@ -604,7 +711,7 @@ mod tests {
 
     #[test]
     fn normal_buffer_boundaries() {
-        let message = Message::Rpm(Rpm { amount: 9_000 });
+        let message = Message::BikeSnapshot(BikeSnapshot::default());
         let required = message.message_type().encoded_len();
 
         for len in 0..required {
@@ -617,35 +724,25 @@ mod tests {
             assert!(buffer.iter().all(|&byte| byte == 0xAA));
         }
     }
-
     #[test]
     fn rejects_truncated_and_extra_normal_packets() {
         let packets: &[&[u8]] = &[
-            &[1, 42],
-            &[2, ABSMode::Street as u8],
-            &[3, 0x34, 0x12],
-            &[4, 1],
-            &[5, 0],
-            &[9, 6],
-            &[10, 0x78, 0x56, 0x34, 0x12],
+            &[11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            &[7, 0x34, 0x12],
+            &[8, 0x78, 0x56],
         ];
 
         for packet in packets {
             for length in 0..packet.len() {
                 assert!(Message::decode(&packet[..length]).is_err());
             }
-        }
 
-        for packet in [
-            &[1, 42, 0][..],
-            &[2, ABSMode::Street as u8, 0][..],
-            &[3, 0x34, 0x12, 0][..],
-            &[4, 1, 0][..],
-            &[5, 0, 0][..],
-            &[9, 6, 0][..],
-            &[10, 0x78, 0x56, 0x34, 0x12, 0][..],
-        ] {
-            assert_eq!(Message::decode(packet), Err(ProtocolError::InvalidPayload));
+            let mut packet_with_extra_byte = packet.to_vec();
+            packet_with_extra_byte.push(0);
+            assert_eq!(
+                Message::decode(&packet_with_extra_byte),
+                Err(ProtocolError::InvalidPayload),
+            );
         }
     }
 

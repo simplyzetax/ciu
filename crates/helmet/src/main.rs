@@ -1,6 +1,9 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    sync::{Arc, Mutex},
+    time::{Duration, Instant},
+};
 
-use ciu_core::iec::protocol::DeviceId;
+use ciu_core::iec::protocol::{BikeSnapshot, DeviceId, Message};
 use ciu_esp32::{
     attachment::AttachmentPin,
     pairing::pair_as_helmet,
@@ -11,6 +14,8 @@ use esp_idf_hal::{delay::FreeRtos, gpio::PinDriver, peripherals::Peripherals};
 
 const APP_STACK_SIZE: usize = 10 * 1024;
 const PAIRING_STACK_SIZE: usize = 8 * 1024;
+const SNAPSHOT_INTERVAL_MS: u32 = 100;
+const PING_INTERVAL: Duration = Duration::from_millis(500);
 
 fn main() {
     esp_idf_svc::sys::link_patches();
@@ -47,6 +52,8 @@ fn run() -> anyhow::Result<()> {
         RuntimeState::from_saved_state(&state)
     }));
 
+    let bike_state = Arc::new(Mutex::new(BikeSnapshot::default()));
+
     let radio = esp_idf_svc::espnow::EspNow::take()?;
     let esp_now = Arc::new(ciu_esp32::espnow::EspNow::new(radio)?);
     {
@@ -57,11 +64,19 @@ fn run() -> anyhow::Result<()> {
         }
     }
 
+    let received_bike_state = Arc::clone(&bike_state);
     esp_now.on_receive(
         Arc::clone(&saved_state),
         Arc::clone(&runtime_state),
-        |device, message| {
-            println!("Helmet ESP-NOW RX from {:?}: {:?}", device, message);
+        move |device, snapshot| {
+            println!("Helmet ESP-NOW RX from {:?}: {:?}", device, snapshot);
+
+            if device == DeviceId::Bike {
+                received_bike_state
+                    .lock()
+                    .expect("bike state mutex poisoned")
+                    .merge(snapshot);
+            }
         },
     )?;
 
@@ -114,20 +129,37 @@ fn run() -> anyhow::Result<()> {
         })?;
 
     let mut ping_sequence = 0u16;
+    let mut last_ping = Instant::now();
 
     loop {
+        let snapshot = *bike_state.lock().expect("bike state mutex poisoned");
+        let snapshot_message = Message::BikeSnapshot(snapshot);
+        let should_ping = last_ping.elapsed() >= PING_INTERVAL;
+
         {
             let state = saved_state.lock().expect("saved state mutex poisoned");
 
             for peer in &state.peers {
-                if let Err(error) = esp_now.send_ping(peer.mac, ping_sequence) {
-                    println!("Failed to send Ping to {:?}: {error:#}", peer.device);
+                if peer.device == DeviceId::Goggle {
+                    if let Err(error) = esp_now.send(peer.mac, &snapshot_message) {
+                        println!("Failed to send bike snapshot to Goggles: {error:#}");
+                    }
                 }
 
-                ping_sequence = ping_sequence.wrapping_add(1);
+                if should_ping {
+                    if let Err(error) = esp_now.send_ping(peer.mac, ping_sequence) {
+                        println!("Failed to send Ping to {:?}: {error:#}", peer.device);
+                    }
+
+                    ping_sequence = ping_sequence.wrapping_add(1);
+                }
             }
         }
 
-        FreeRtos::delay_ms(500);
+        if should_ping {
+            last_ping = Instant::now();
+        }
+
+        FreeRtos::delay_ms(SNAPSHOT_INTERVAL_MS);
     }
 }

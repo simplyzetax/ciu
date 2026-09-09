@@ -12,7 +12,7 @@ use esp_idf_svc::{
     sys::ESP_ERR_ESPNOW_NO_MEM,
 };
 
-use ciu_core::iec::protocol::{ApplicationMessage, DeviceId, Message, Ping, Pong};
+use ciu_core::iec::protocol::{BikeSnapshot, DeviceId, Message, Ping, Pong};
 
 use crate::saved_state::{RuntimeState, SavedState};
 
@@ -72,7 +72,7 @@ fn receive_packets(
     packets: Receiver<IncomingPacket>,
     saved_state: Arc<Mutex<SavedState>>,
     runtime_state: Arc<Mutex<RuntimeState>>,
-    mut on_message: impl FnMut(DeviceId, ApplicationMessage),
+    mut on_snapshot: impl FnMut(DeviceId, BikeSnapshot),
 ) {
     while let Ok(packet) = packets.recv() {
         let Ok(message) = Message::decode(&packet.data) else {
@@ -117,26 +117,8 @@ fn receive_packets(
                 println!("Pong from {:?}, sequence {}", device, pong.sequence);
             }
 
-            Message::Throttle(value) => {
-                on_message(device, ApplicationMessage::Throttle(value));
-            }
-            Message::ABS(value) => {
-                on_message(device, ApplicationMessage::ABS(value));
-            }
-            Message::Rpm(value) => {
-                on_message(device, ApplicationMessage::Rpm(value));
-            }
-            Message::Clutch(value) => {
-                on_message(device, ApplicationMessage::Clutch(value));
-            }
-            Message::KillSwitch(value) => {
-                on_message(device, ApplicationMessage::KillSwitch(value));
-            }
-            Message::Gear(value) => {
-                on_message(device, ApplicationMessage::Gear(value));
-            }
-            Message::Speed(value) => {
-                on_message(device, ApplicationMessage::Speed(value));
+            Message::BikeSnapshot(snapshot) => {
+                on_snapshot(device, snapshot);
             }
         }
     }
@@ -198,17 +180,17 @@ impl EspNow {
         }
     }
 
-    /// Registers a callback for normal CIU messages received over ESP-NOW.
+    /// Registers a callback for bike snapshots received over ESP-NOW.
     ///
     /// Invalid packets, including pairing packets, are ignored. Ping and Pong
-    /// are handled here; all application messages are passed to `on_message`.
+    /// are handled here; bike snapshots are passed to `on_snapshot`.
     /// The Wi-Fi task only copies packets into a queue. Decoding, state updates,
     /// logging, and responses run on a separate task with enough stack.
     pub fn on_receive(
         self: &Arc<Self>,
         saved_state: Arc<Mutex<SavedState>>,
         runtime_state: Arc<Mutex<RuntimeState>>,
-        on_message: impl FnMut(DeviceId, ApplicationMessage) + Send + 'static,
+        on_snapshot: impl FnMut(DeviceId, BikeSnapshot) + Send + 'static,
     ) -> anyhow::Result<()> {
         let (receive_queue, packets) = sync_channel(RECEIVE_QUEUE_CAPACITY);
         let esp_now = Arc::clone(self);
@@ -217,7 +199,7 @@ impl EspNow {
             .name("esp-now-rx".into())
             .stack_size(RX_STACK_SIZE)
             .spawn(move || {
-                receive_packets(esp_now, packets, saved_state, runtime_state, on_message);
+                receive_packets(esp_now, packets, saved_state, runtime_state, on_snapshot);
             })?;
 
         self.radio.register_recv_cb(move |info, data| {
