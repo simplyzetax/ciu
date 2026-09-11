@@ -1,5 +1,5 @@
 {
-  "generatedAtMs": 1789144154027,
+  "generatedAtMs": 1789148498489,
   "stageCount": 8,
   "ran": 1,
   "resumed": 4,
@@ -47,28 +47,28 @@
     {
       "name": "layout-draft",
       "resumed": false,
-      "wallMs": 339913,
-      "turns": 11,
-      "tokensIn": 4994421,
-      "tokensOut": 26122,
-      "cacheHits": 0,
-      "cacheHitPct": 0
+      "wallMs": 929469,
+      "turns": 19,
+      "tokensIn": 16826660,
+      "tokensOut": 186120,
+      "cacheHits": 1,
+      "cacheHitPct": 5
     }
   ],
   "total": {
-    "wallMs": 339913,
-    "turns": 11,
-    "tokensIn": 4994421,
-    "tokensOut": 26122,
-    "cacheHits": 0,
-    "cacheHitPct": 0
+    "wallMs": 929469,
+    "turns": 19,
+    "tokensIn": 16826660,
+    "tokensOut": 186120,
+    "cacheHits": 1,
+    "cacheHitPct": 5
   },
   "slowestStage": {
     "name": "layout-draft",
-    "wallMs": 339913
+    "wallMs": 929469
   },
   "mostExpensiveStage": {
     "name": "layout-draft",
-    "tokensOut": 26122
+    "tokensOut": 186120
   }
 }

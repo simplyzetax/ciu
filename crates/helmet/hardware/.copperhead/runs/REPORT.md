@@ -9,7 +9,7 @@ Resumed stages were already complete on entry and cost nothing this run.
 | architecture | — | — | — | — | — | resumed |
 | part-selection | — | — | — | — | — | resumed |
 | schematic | — | — | — | — | — | resumed |
-| layout-draft | 5m40s | 11 | 4994.4k | 26.1k | 0% | ran |
-| **Total** | 5m40s | 11 | 4994.4k | 26.1k | 0% |  |
+| layout-draft | 15m29s | 19 | 16826.7k | 186.1k | 5% | ran |
+| **Total** | 15m29s | 19 | 16826.7k | 186.1k | 5% |  |
 
-Slowest stage: **layout-draft** (5m40s). Most expensive: **layout-draft** (26.1k out tokens).
+Slowest stage: **layout-draft** (15m29s). Most expensive: **layout-draft** (186.1k out tokens).
