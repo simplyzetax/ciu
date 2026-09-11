@@ -11,7 +11,14 @@
 | J1 | 7 | IRQ |
 | J1 | 8 | RESET |
 | J1 | 9 | SLP_TR |
+| B1 | 1 | BALUN_OUT |
+| B1 | 2 | GND |
+| B1 | 3 | RFP_BAL |
+| B1 | 4 | RFN_BAL |
+| B1 | 5 | GND |
+| B1 | 6 | GND |
 | U1 | 4 | RFP |
+| U1 | 5 | RFN |
 | U1 | 8 | RESET |
 | U1 | 11 | SLP_TR |
 | U1 | 13 | 3V3 |

@@ -16,6 +16,13 @@
       "group": "Connectivity and control"
     },
     {
+      "ref": "B1",
+      "libId": "Connector_Generic:Conn_01x06",
+      "value": "2450BM15A0015",
+      "footprint": "ciu:Johanson_2450BM15A0015",
+      "group": "Radio and RF"
+    },
+    {
       "ref": "Y1",
       "libId": "Device:Crystal_GND23",
       "value": "16MHz",
@@ -121,6 +128,20 @@
       "group": "Radio and RF"
     },
     {
+      "ref": "C11",
+      "libId": "Device:C",
+      "value": "22pF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "C12",
+      "libId": "Device:C",
+      "value": "22pF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Radio and RF"
+    },
+    {
       "ref": "AE1",
       "libId": "Device:Antenna_Chip",
       "value": "2.4GHz",
@@ -207,7 +228,10 @@
         "C7.2",
         "C8.2",
         "C9.2",
-        "C10.2"
+        "C10.2",
+        "B1.2",
+        "B1.5",
+        "B1.6"
       ]
     },
     { "name": "MOSI", "pins": ["J1.3", "U1.22", "TP1.1"] },
@@ -219,14 +243,17 @@
     { "name": "SLP_TR", "pins": ["J1.9", "U1.11"] },
     { "name": "XTAL1", "pins": ["U1.26", "Y1.1", "C7.1"] },
     { "name": "XTAL2", "pins": ["U1.25", "Y1.4", "C8.1"] },
-    { "name": "RFP", "pins": ["U1.4", "L1.1"] },
+    { "name": "RFP", "pins": ["U1.4", "C11.1"] },
+    { "name": "RFP_BAL", "pins": ["C11.2", "B1.3"] },
+    { "name": "RFN", "pins": ["U1.5", "C12.1"] },
+    { "name": "RFN_BAL", "pins": ["C12.2", "B1.4"] },
+    { "name": "BALUN_OUT", "pins": ["B1.1", "L1.1"] },
     { "name": "RF_MATCH", "pins": ["L1.2", "L2.1", "C9.1"] },
     { "name": "RF_FEED", "pins": ["L2.2", "C10.1", "AE1.1", "TP5.1"] }
   ],
   "noConnect": [
     "U1.1",
     "U1.2",
-    "U1.5",
     "U1.9",
     "U1.10",
     "U1.15",

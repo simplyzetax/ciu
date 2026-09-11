@@ -1,5 +1,17 @@
 # Design changelog
 
+## 2026-09-11 — create pipeline stage: part-selection
+
+- Change: part-selection
+- Files: docs/BOM.md, docs/DECISIONS.md, docs/CHANGELOG.md, schematic.intent.json, docs/PINOUT.md, at86rf233-spi-carrier-board-for-esp32-c6-host.kicad_sch
+- Verification: ERC clean
+
+## 2026-09-11 — create pipeline stage: part-selection
+
+- Change: part-selection
+- Files: docs/BOM.md, docs/PINOUT.md, docs/DECISIONS.md, docs/CHANGELOG.md, schematic.intent.json, at86rf233-spi-carrier-board-for-esp32-c6-host.kicad_sch
+- Verification: installed symbols and real pins confirmed for U1, B1, J1, Y1, AE1, FB1, and TP1-TP5; every MPN marked UNVERIFIED; ERC, symbol, legibility, and drift checks run
+
 Append-only, newest first. One entry per committed copperhead run.
 
 ## 2026-09-11 — create pipeline stage: schematic
