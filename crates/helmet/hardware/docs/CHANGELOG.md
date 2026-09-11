@@ -1,5 +1,17 @@
 # Design changelog
 
+## 2026-09-11 — create pipeline stage: outputs
+
+- Change: outputs
+- Files: outputs/, outputs/BOM.csv, docs/DECISIONS.md, docs/CHANGELOG.md
+- Verification: ERC clean, DRC clean
+
+## 2026-09-11 — create pipeline stage: outputs
+
+- Change: outputs
+- Files: outputs/ Gerbers and drill files, outputs/outline.dxf, outputs/board.step, outputs/board.svg, outputs/schematic.svg, outputs/BOM.csv, docs/DECISIONS.md, docs/CHANGELOG.md
+- Verification: every fabrication, mechanical, and SVG export succeeded; ordering BOM generated from docs/BOM.md; ERC clean; DRC clean; legibility has 0 errors (2 non-blocking advisories); documentation drift clean
+
 ## 2026-09-11 — create pipeline stage: part-selection
 
 - Change: part-selection
