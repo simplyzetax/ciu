@@ -1,5 +1,17 @@
 # Design changelog
 
+## 2026-09-11 — create pipeline stage: devplan
+
+- Change: devplan
+- Files: docs/DEVPLAN.md, docs/CHANGELOG.md, docs/DECISIONS.md
+- Verification: ERC clean, DRC clean
+
+## 2026-09-11 — create pipeline stage: devplan
+
+- Change: devplan
+- Files: docs/DEVPLAN.md, docs/DECISIONS.md, docs/CHANGELOG.md
+- Verification: ERC clean, DRC clean, documentation drift checked
+
 ## 2026-09-11 — create pipeline stage: firmware
 
 - Change: firmware
