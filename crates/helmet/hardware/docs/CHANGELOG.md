@@ -2,6 +2,12 @@
 
 Append-only, newest first. One entry per committed copperhead run.
 
+## 2026-09-11 — create pipeline stage: schematic
+
+- Change: schematic
+- Files: schematic.intent.json, at86rf233-spi-carrier-board-for-esp32-c6-host.kicad_sch, docs/PINOUT.md, docs/DECISIONS.md
+- Verification: ERC clean
+
 ## 2026-09-11 — resolve the text-collision legibility finding between #PWR06 and the AVDD label near (303.53, 108.2) by moving the AVDD label clear of the 3V3 value text
 
 - Change: clear-avdd-label-collision

@@ -1,64 +1,64 @@
 {
-  "generatedAtMs": 1789088292206,
+  "generatedAtMs": 1789093236036,
   "stageCount": 8,
-  "ran": 4,
-  "resumed": 0,
+  "ran": 1,
+  "resumed": 3,
   "stages": [
     {
       "name": "spec-seed",
-      "resumed": false,
-      "wallMs": 113759,
-      "turns": 9,
-      "tokensIn": 1459663,
-      "tokensOut": 17018,
+      "resumed": true,
+      "wallMs": 0,
+      "turns": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
       "cacheHits": 0,
-      "cacheHitPct": 0
+      "cacheHitPct": null
     },
     {
       "name": "architecture",
-      "resumed": false,
-      "wallMs": 51260,
-      "turns": 3,
-      "tokensIn": 155762,
-      "tokensOut": 3994,
+      "resumed": true,
+      "wallMs": 0,
+      "turns": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
       "cacheHits": 0,
-      "cacheHitPct": 0
+      "cacheHitPct": null
     },
     {
       "name": "part-selection",
-      "resumed": false,
-      "wallMs": 123296,
-      "turns": 7,
-      "tokensIn": 901442,
-      "tokensOut": 15258,
+      "resumed": true,
+      "wallMs": 0,
+      "turns": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
       "cacheHits": 0,
-      "cacheHitPct": 0
+      "cacheHitPct": null
     },
     {
       "name": "schematic",
       "resumed": false,
-      "wallMs": 438537,
-      "turns": 16,
-      "tokensIn": 3229717,
-      "tokensOut": 70020,
+      "wallMs": 394352,
+      "turns": 10,
+      "tokensIn": 1762245,
+      "tokensOut": 47931,
       "cacheHits": 0,
       "cacheHitPct": 0
     }
   ],
   "total": {
-    "wallMs": 726852,
-    "turns": 35,
-    "tokensIn": 5746584,
-    "tokensOut": 106290,
+    "wallMs": 394352,
+    "turns": 10,
+    "tokensIn": 1762245,
+    "tokensOut": 47931,
     "cacheHits": 0,
     "cacheHitPct": 0
   },
   "slowestStage": {
     "name": "schematic",
-    "wallMs": 438537
+    "wallMs": 394352
   },
   "mostExpensiveStage": {
     "name": "schematic",
-    "tokensOut": 70020
+    "tokensOut": 47931
   }
 }

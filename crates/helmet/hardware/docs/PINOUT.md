@@ -1,0 +1,32 @@
+# Pinout
+
+| Refdes | Pin | Net |
+| --- | --- | --- |
+| J1 | 1 | 3V3 |
+| J1 | 2 | GND |
+| J1 | 3 | MOSI |
+| J1 | 4 | MISO |
+| J1 | 5 | SCLK |
+| J1 | 6 | SEL |
+| J1 | 7 | IRQ |
+| J1 | 8 | RESET |
+| J1 | 9 | SLP_TR |
+| U1 | 4 | RFP |
+| U1 | 8 | RESET |
+| U1 | 11 | SLP_TR |
+| U1 | 13 | 3V3 |
+| U1 | 19 | SCLK |
+| U1 | 20 | MISO |
+| U1 | 22 | MOSI |
+| U1 | 23 | SEL |
+| U1 | 24 | IRQ |
+| U1 | 25 | XTAL2 |
+| U1 | 26 | XTAL1 |
+| U1 | 28 | 3V3 |
+| U1 | 29 | AVDD |
+| U1 | 33 | GND |
+| TP1 | 1 | MOSI |
+| TP2 | 1 | MISO |
+| TP3 | 1 | SCLK |
+| TP4 | 1 | SEL |
+| TP5 | 1 | RF_FEED |

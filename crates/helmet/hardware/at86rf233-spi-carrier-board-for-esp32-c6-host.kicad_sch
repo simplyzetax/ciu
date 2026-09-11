@@ -379,261 +379,6 @@
 		)
 		(embedded_fonts no)
 	)
-		
-		(symbol "power:+3V3"
-		(power global)
-		(pin_numbers
-			(hide yes)
-		)
-		(pin_names
-			(offset 0)
-			(hide yes)
-		)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(duplicate_pin_numbers_are_jumpers no)
-		(property "Reference" "#PWR"
-			(at 0 -3.81 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 0 3.556 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "ki_keywords" "global power"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(symbol "+3V3_0_1"
-			(polyline
-				(pts
-					(xy -0.762 1.27) (xy 0 2.54)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 0 2.54) (xy 0.762 1.27)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(polyline
-				(pts
-					(xy 0 0) (xy 0 2.54)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-		)
-		(symbol "+3V3_1_1"
-			(pin power_in line
-				(at 0 0 90)
-				(length 0)
-				(name ""
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-		)
-		(embedded_fonts no)
-	)
-		(symbol "power:PWR_FLAG"
-		(power global)
-		(pin_numbers
-			(hide yes)
-		)
-		(pin_names
-			(offset 0)
-			(hide yes)
-		)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(duplicate_pin_numbers_are_jumpers no)
-		(property "Reference" "#FLG"
-			(at 0 1.905 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 0 3.81 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "ki_keywords" "flag power"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(symbol "PWR_FLAG_0_0"
-			(pin power_out line
-				(at 0 0 90)
-				(length 0)
-				(name ""
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-		)
-		(symbol "PWR_FLAG_0_1"
-			(polyline
-				(pts
-					(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
-				)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-		)
-		(embedded_fonts no)
-	)
 		(symbol "Connector_Generic:Conn_01x09"
 				(pin_names
 					(offset 1.016)
@@ -1789,6 +1534,171 @@
 				)
 				(embedded_fonts no)
 			)
+		(symbol "Device:FerriteBead"
+				(pin_numbers
+					(hide yes)
+				)
+				(pin_names
+					(offset 0)
+				)
+				(exclude_from_sim no)
+				(in_bom yes)
+				(on_board yes)
+				(in_pos_files yes)
+				(duplicate_pin_numbers_are_jumpers no)
+				(property "Reference" "FB"
+					(at -3.81 0.635 90)
+					(show_name no)
+					(do_not_autoplace no)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Value" "FerriteBead"
+					(at 3.81 0 90)
+					(show_name no)
+					(do_not_autoplace no)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Footprint" ""
+					(at -1.778 0 90)
+					(show_name no)
+					(do_not_autoplace no)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Datasheet" ""
+					(at 0 0 0)
+					(show_name no)
+					(do_not_autoplace no)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "Description" "Ferrite bead"
+					(at 0 0 0)
+					(show_name no)
+					(do_not_autoplace no)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "ki_keywords" "L ferrite bead inductor filter"
+					(at 0 0 0)
+					(show_name no)
+					(do_not_autoplace no)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(property "ki_fp_filters" "Inductor_* L_* *Ferrite*"
+					(at 0 0 0)
+					(show_name no)
+					(do_not_autoplace no)
+					(hide yes)
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(symbol "FerriteBead_0_1"
+					(polyline
+						(pts
+							(xy -2.7686 0.4064) (xy -1.7018 2.2606) (xy 2.7686 -0.3048) (xy 1.6764 -2.159) (xy -2.7686 0.4064)
+						)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(polyline
+						(pts
+							(xy 0 1.27) (xy 0 1.2954)
+						)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+					(polyline
+						(pts
+							(xy 0 -1.27) (xy 0 -1.2192)
+						)
+						(stroke
+							(width 0)
+							(type default)
+						)
+						(fill
+							(type none)
+						)
+					)
+				)
+				(symbol "FerriteBead_1_1"
+					(pin passive line
+						(at 0 3.81 270)
+						(length 2.54)
+						(name ""
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+						(number "1"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+					)
+					(pin passive line
+						(at 0 -3.81 90)
+						(length 2.54)
+						(name ""
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+						(number "2"
+							(effects
+								(font
+									(size 1.27 1.27)
+								)
+							)
+						)
+					)
+				)
+				(embedded_fonts no)
+			)
 		(symbol "Device:L"
 				(pin_numbers
 					(hide yes)
@@ -2836,12 +2746,12 @@
 		(uuid "76b0b5c5-4d05-5d0b-9ac8-9fb2921cb1ed")
 	)
 	(wire
-		(pts (xy 134.62 90.17) (xy 134.62 87.63))
+		(pts (xy 137.16 90.17) (xy 137.16 87.63))
 		(stroke (width 0) (type default))
 		(uuid "373a986d-5694-5be2-b789-4085ceff7eb8")
 	)
 	(wire
-		(pts (xy 107.95 87.63) (xy 134.62 87.63))
+		(pts (xy 107.95 87.63) (xy 137.16 87.63))
 		(stroke (width 0) (type default))
 		(uuid "09509833-2664-5705-8db7-625b8d2e3099")
 	)
@@ -2896,7 +2806,7 @@
 		(uuid "784c3741-816b-50db-80e9-248b75c2ad07")
 	)
 	(wire
-		(pts (xy 134.62 97.79) (xy 134.62 100.33))
+		(pts (xy 137.16 97.79) (xy 137.16 100.33))
 		(stroke (width 0) (type default))
 		(uuid "65ffd728-d7b8-5493-82ba-f1a52f2fb6e0")
 	)
@@ -3175,7 +3085,7 @@
 		(fill (type none))
 		(uuid "d7cb900b-a303-5397-bf08-08cf557f95f2")
 	)
-	(rectangle (start 124.968 78.74) (end 205.232 158.242)
+	(rectangle (start 124.968 79.0194) (end 205.232 158.242)
 		(stroke (width 0.152) (type solid))
 		(fill (type none))
 		(uuid "dd617e32-f5a2-5817-997f-d7d2aff4c0c2")
@@ -3189,7 +3099,7 @@
 		(effects (font (size 2 2)) (justify left top))
 		(uuid "b0e23bf4-a8d8-55b6-85c2-ee994f63bd30")
 	)
-	(text "Power" (at 126.968 80.74 0)
+	(text "Power" (at 126.968 81.0194 0)
 		(effects (font (size 2 2)) (justify left top))
 		(uuid "386a3423-45f7-5271-8b1d-6fac1b114e22")
 	)
@@ -3621,7 +3531,7 @@
 		(effects (font (size 1.27 1.27)))
 		(uuid "e4da45aa-4369-518a-beba-d528a55c6284")
 	)
-	(label "AVDD" (at 134.62 100.33 0)
+	(label "AVDD" (at 137.16 100.33 0)
 		(effects (font (size 1.27 1.27)))
 		(uuid "28a73f1c-7c7d-5e28-8025-dd1f59a81502")
 	)
@@ -4257,24 +4167,24 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:L")
-		(at 134.62 93.98 0)
+		(lib_id "Device:FerriteBead")
+		(at 137.16 93.98 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "3cea059e-4083-5f0c-92e1-0d5b19368da9")
-		(property "Reference" "FB1" (at 138.5543 92.71 0)
+		(property "Reference" "FB1" (at 143.2306 92.6592 0)
 			(effects (font (size 1.27 1.27)))
 		)
-		(property "Value" "600R" (at 138.5543 95.25 0)
+		(property "Value" "600R" (at 143.2306 95.1992 0)
 			(effects (font (size 1.27 1.27)))
 		)
-		(property "Footprint" "Inductor_SMD:L_0402_1005Metric" (at 134.62 93.98 0)
+		(property "Footprint" "Inductor_SMD:L_0402_1005Metric" (at 137.16 93.98 0)
 			(effects (font (size 1.27 1.27)) hide)
 		)
-		(property "Datasheet" "~" (at 134.62 93.98 0)
+		(property "Datasheet" "~" (at 137.16 93.98 0)
 			(effects (font (size 1.27 1.27)) hide)
 		)
 		(pin "1" (uuid "a39567a3-bed0-54e8-8016-cbcb8f4d523c"))
