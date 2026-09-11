@@ -27,6 +27,8 @@ Sena Mesh (30K) and Cardo DMC packets.
   live on separate modules wired externally.
 - Test points on SPI lines and on the antenna feed for probing during
   bring-up.
+- This is a short-jumper prototype carrier. Connector ESD protection is not
+  required; do not add ESD parts unless explicitly requested later.
 
 ## Explicit non-goals
 
@@ -39,7 +41,9 @@ Sena Mesh (30K) and Cardo DMC packets.
 
 ## Budgets
 
-- Board outline: fit within 25mm x 20mm if possible; smaller is fine.
+- Board outline: target 25mm x 20mm if practical. The existing 30mm x 20mm
+  outline is acceptable when the header, antenna keepout, and test points do
+  not fit safely in the target size.
 - Supply: single 3.3V rail, target current draw under 40mA average,
   peak under 20mA extra during TX per datasheet.
 - Layer count: 2 layers, standard 1.6mm FR4, unless the antenna matching
@@ -55,7 +59,8 @@ Sena Mesh (30K) and Cardo DMC packets.
 
 ## Deliverables
 
-- KiCad schematic and PCB layout, ERC/DRC clean.
+- KiCad schematic and PCB layout, ERC/DRC clean. Route every electrical net;
+  unconnected ratsnest items are not acceptable in the completed layout.
 - Gerbers, drill files, and STEP model.
 - BOM with real, sourceable part numbers and datasheet references for
   every part, especially the antenna matching network components.

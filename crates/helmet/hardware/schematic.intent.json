@@ -1,1 +1,241 @@
-{"version":1,"parts":[{"ref":"U1","libId":"RF_ZigBee:AT86RF233-Z","value":"AT86RF233-ZU","footprint":"Package_DFN_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.35x3.35mm","group":"Radio and RF"},{"ref":"J1","libId":"Connector_Generic:Conn_01x09","value":"Conn_01x09","footprint":"Connector_PinHeader_2.54mm:PinHeader_1x09_P2.54mm_Vertical","group":"Connectivity and control"},{"ref":"Y1","libId":"Device:Crystal_GND23","value":"16MHz","footprint":"Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm","group":"Radio and RF"},{"ref":"R1","libId":"Device:R","value":"100k","footprint":"Resistor_SMD:R_0402_1005Metric","group":"Connectivity and control"},{"ref":"FB1","libId":"Device:FerriteBead","value":"600R","footprint":"Inductor_SMD:L_0402_1005Metric","group":"Power"},{"ref":"L1","libId":"Device:L","value":"3.9nH","footprint":"Inductor_SMD:L_0402_1005Metric","group":"Radio and RF"},{"ref":"L2","libId":"Device:L","value":"3.9nH","footprint":"Inductor_SMD:L_0402_1005Metric","group":"Radio and RF"},{"ref":"C1","libId":"Device:C","value":"100nF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Power"},{"ref":"C2","libId":"Device:C","value":"100nF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Power"},{"ref":"C3","libId":"Device:C","value":"100nF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Power"},{"ref":"C4","libId":"Device:C","value":"1uF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Power"},{"ref":"C5","libId":"Device:C","value":"1uF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Power"},{"ref":"C6","libId":"Device:C","value":"1uF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Power"},{"ref":"C7","libId":"Device:C","value":"12pF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Radio and RF"},{"ref":"C8","libId":"Device:C","value":"12pF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Radio and RF"},{"ref":"C9","libId":"Device:C","value":"1pF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Radio and RF"},{"ref":"C10","libId":"Device:C","value":"1.5pF","footprint":"Capacitor_SMD:C_0402_1005Metric","group":"Radio and RF"},{"ref":"AE1","libId":"Device:Antenna_Chip","value":"2.4GHz","footprint":"Antenna:Antennas_Chip_2.4GHz","group":"Radio and RF"},{"ref":"TP1","libId":"Connector:TestPoint","value":"TestPoint","footprint":"Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical","group":"Connectivity and control"},{"ref":"TP2","libId":"Connector:TestPoint","value":"TestPoint","footprint":"Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical","group":"Connectivity and control"},{"ref":"TP3","libId":"Connector:TestPoint","value":"TestPoint","footprint":"Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical","group":"Connectivity and control"},{"ref":"TP4","libId":"Connector:TestPoint","value":"TestPoint","footprint":"Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical","group":"Connectivity and control"},{"ref":"TP5","libId":"Connector:TestPoint","value":"TestPoint","footprint":"Connector_PinHeader_1.00mm:PinHeader_1x01_P1.00mm_Vertical","group":"Radio and RF"}],"nets":[{"name":"3V3","pins":["J1.1","U1.13","U1.14","U1.28","FB1.1","C1.1","C3.1","C4.1","C6.1","R1.1"]},{"name":"AVDD","pins":["FB1.2","U1.29","C2.1","C5.1"]},{"name":"GND","pins":["J1.2","U1.3","U1.6","U1.7","U1.12","U1.16","U1.18","U1.21","U1.27","U1.30","U1.31","U1.32","U1.33","C1.2","C2.2","C3.2","C4.2","C5.2","C6.2","Y1.2","Y1.3","C7.2","C8.2","C9.2","C10.2"]},{"name":"MOSI","pins":["J1.3","U1.22","TP1.1"]},{"name":"MISO","pins":["J1.4","U1.20","TP2.1"]},{"name":"SCLK","pins":["J1.5","U1.19","TP3.1"]},{"name":"SEL","pins":["J1.6","U1.23","TP4.1"]},{"name":"IRQ","pins":["J1.7","U1.24"]},{"name":"RESET","pins":["J1.8","U1.8","R1.2"]},{"name":"SLP_TR","pins":["J1.9","U1.11"]},{"name":"XTAL1","pins":["U1.26","Y1.1","C7.1"]},{"name":"XTAL2","pins":["U1.25","Y1.4","C8.1"]},{"name":"RFP","pins":["U1.4","L1.1"]},{"name":"RF_MATCH","pins":["L1.2","L2.1","C9.1"]},{"name":"RF_FEED","pins":["L2.2","C10.1","AE1.1","TP5.1"]}],"noConnect":["U1.1","U1.2","U1.5","U1.9","U1.10","U1.15","U1.17","AE1.2"],"hints":{"groupOrder":["Connectivity and control","Power","Radio and RF"],"paper":"A3","date":"2026-09-11"}}
+{
+  "version": 1,
+  "parts": [
+    {
+      "ref": "U1",
+      "libId": "RF_ZigBee:AT86RF233-Z",
+      "value": "AT86RF233-ZU",
+      "footprint": "Package_DFN_QFN:QFN-32-1EP_5x5mm_P0.5mm_EP3.3x3.3mm",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "J1",
+      "libId": "Connector_Generic:Conn_01x09",
+      "value": "Conn_01x09",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x09_P2.54mm_Vertical",
+      "group": "Connectivity and control"
+    },
+    {
+      "ref": "Y1",
+      "libId": "Device:Crystal_GND23",
+      "value": "16MHz",
+      "footprint": "Crystal:Crystal_SMD_Abracon_ABM8G-4Pin_3.2x2.5mm",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "R1",
+      "libId": "Device:R",
+      "value": "100k",
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "group": "Connectivity and control"
+    },
+    {
+      "ref": "FB1",
+      "libId": "Device:FerriteBead",
+      "value": "600R",
+      "footprint": "Inductor_SMD:L_0402_1005Metric",
+      "group": "Power"
+    },
+    {
+      "ref": "L1",
+      "libId": "Device:L",
+      "value": "3.9nH",
+      "footprint": "Inductor_SMD:L_0402_1005Metric",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "L2",
+      "libId": "Device:L",
+      "value": "3.9nH",
+      "footprint": "Inductor_SMD:L_0402_1005Metric",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "C1",
+      "libId": "Device:C",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Power"
+    },
+    {
+      "ref": "C2",
+      "libId": "Device:C",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Power"
+    },
+    {
+      "ref": "C3",
+      "libId": "Device:C",
+      "value": "100nF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Power"
+    },
+    {
+      "ref": "C4",
+      "libId": "Device:C",
+      "value": "1uF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Power"
+    },
+    {
+      "ref": "C5",
+      "libId": "Device:C",
+      "value": "1uF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Power"
+    },
+    {
+      "ref": "C6",
+      "libId": "Device:C",
+      "value": "1uF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Power"
+    },
+    {
+      "ref": "C7",
+      "libId": "Device:C",
+      "value": "12pF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "C8",
+      "libId": "Device:C",
+      "value": "12pF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "C9",
+      "libId": "Device:C",
+      "value": "1pF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "C10",
+      "libId": "Device:C",
+      "value": "1.5pF",
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "AE1",
+      "libId": "Device:Antenna_Chip",
+      "value": "2.4GHz",
+      "footprint": "RF_Antenna:Johanson_2450AT18x100",
+      "group": "Radio and RF"
+    },
+    {
+      "ref": "TP1",
+      "libId": "Connector:TestPoint",
+      "value": "TestPoint",
+      "footprint": "TestPoint:TestPoint_Keystone_5015_Micro_Mini",
+      "group": "Connectivity and control"
+    },
+    {
+      "ref": "TP2",
+      "libId": "Connector:TestPoint",
+      "value": "TestPoint",
+      "footprint": "TestPoint:TestPoint_Keystone_5015_Micro_Mini",
+      "group": "Connectivity and control"
+    },
+    {
+      "ref": "TP3",
+      "libId": "Connector:TestPoint",
+      "value": "TestPoint",
+      "footprint": "TestPoint:TestPoint_Keystone_5015_Micro_Mini",
+      "group": "Connectivity and control"
+    },
+    {
+      "ref": "TP4",
+      "libId": "Connector:TestPoint",
+      "value": "TestPoint",
+      "footprint": "TestPoint:TestPoint_Keystone_5015_Micro_Mini",
+      "group": "Connectivity and control"
+    },
+    {
+      "ref": "TP5",
+      "libId": "Connector:TestPoint",
+      "value": "TestPoint",
+      "footprint": "TestPoint:TestPoint_Keystone_5015_Micro_Mini",
+      "group": "Radio and RF"
+    }
+  ],
+  "nets": [
+    {
+      "name": "3V3",
+      "pins": [
+        "J1.1",
+        "U1.13",
+        "U1.14",
+        "U1.28",
+        "FB1.1",
+        "C1.1",
+        "C3.1",
+        "C4.1",
+        "C6.1",
+        "R1.1"
+      ]
+    },
+    { "name": "AVDD", "pins": ["FB1.2", "U1.29", "C2.1", "C5.1"] },
+    {
+      "name": "GND",
+      "pins": [
+        "J1.2",
+        "U1.3",
+        "U1.6",
+        "U1.7",
+        "U1.12",
+        "U1.16",
+        "U1.18",
+        "U1.21",
+        "U1.27",
+        "U1.30",
+        "U1.31",
+        "U1.32",
+        "U1.33",
+        "C1.2",
+        "C2.2",
+        "C3.2",
+        "C4.2",
+        "C5.2",
+        "C6.2",
+        "Y1.2",
+        "Y1.3",
+        "C7.2",
+        "C8.2",
+        "C9.2",
+        "C10.2"
+      ]
+    },
+    { "name": "MOSI", "pins": ["J1.3", "U1.22", "TP1.1"] },
+    { "name": "MISO", "pins": ["J1.4", "U1.20", "TP2.1"] },
+    { "name": "SCLK", "pins": ["J1.5", "U1.19", "TP3.1"] },
+    { "name": "SEL", "pins": ["J1.6", "U1.23", "TP4.1"] },
+    { "name": "IRQ", "pins": ["J1.7", "U1.24"] },
+    { "name": "RESET", "pins": ["J1.8", "U1.8", "R1.2"] },
+    { "name": "SLP_TR", "pins": ["J1.9", "U1.11"] },
+    { "name": "XTAL1", "pins": ["U1.26", "Y1.1", "C7.1"] },
+    { "name": "XTAL2", "pins": ["U1.25", "Y1.4", "C8.1"] },
+    { "name": "RFP", "pins": ["U1.4", "L1.1"] },
+    { "name": "RF_MATCH", "pins": ["L1.2", "L2.1", "C9.1"] },
+    { "name": "RF_FEED", "pins": ["L2.2", "C10.1", "AE1.1", "TP5.1"] }
+  ],
+  "noConnect": [
+    "U1.1",
+    "U1.2",
+    "U1.5",
+    "U1.9",
+    "U1.10",
+    "U1.15",
+    "U1.17",
+    "AE1.2"
+  ],
+  "hints": {
+    "groupOrder": ["Connectivity and control", "Power", "Radio and RF"],
+    "paper": "A3",
+    "date": "2026-09-11"
+  }
+}

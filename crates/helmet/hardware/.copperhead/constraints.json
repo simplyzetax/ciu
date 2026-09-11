@@ -27,7 +27,7 @@
     ]
   },
   "mechanical.board_width_mm": {
-    "max": 25,
+    "max": 30,
     "source": "docs/SPEC.md: Constraints and budgets",
     "affects": [
       "pcb"

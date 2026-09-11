@@ -12,6 +12,7 @@ A minimal 2-layer carrier board provides SPI/GPIO access to a Microchip AT86RF23
 - The antenna feed shall be controlled impedance, 50 ohm.
 - A 2.54 mm header shall expose 3V3, GND, MOSI, MISO, SCLK, /SEL, IRQ, RESET, and SLP_TR.
 - Test points shall be present on MOSI, MISO, SCLK, /SEL, and the antenna feed.
+- Connector ESD protection is outside the scope of this short-jumper prototype.
 
 ## Constraints and budgets
 
@@ -20,7 +21,7 @@ A minimal 2-layer carrier board provides SPI/GPIO access to a Microchip AT86RF23
 | Supply | One externally supplied 3.3 V rail only; no onboard regulator | Stated |
 | Average current | Less than 40 mA target | Stated |
 | TX incremental peak current | Less than 20 mA additional during TX | Stated |
-| Board outline | At most 25 mm x 20 mm where practicable; smaller is acceptable | Stated |
+| Board outline | Target 25 mm x 20 mm where practical; the existing 30 mm x 20 mm outline is acceptable if required for safe component placement and antenna clearance | Stated |
 | Stackup | Two layers, standard 1.6 mm FR-4 | Stated |
 | RF exception | More than two layers is permitted only when required to realize the 50 ohm antenna feed/matching network, and must be explicitly flagged | Stated |
 | Copper weight | 1 oz copper assumed for initial 50 ohm impedance calculation; confirm against the selected fabricator stackup before layout release | ASSUMED |
@@ -32,7 +33,7 @@ No onboard ESP32 or other MCU, voltage regulation, battery management, charger, 
 
 ## Deliverables
 
-- KiCad schematic and PCB, ERC/DRC clean.
+- KiCad schematic and PCB, ERC/DRC clean, with every electrical net routed.
 - Gerbers, drill files, DXF outline, and STEP model.
 - BOM with real sourceable part numbers and datasheet references, including RF matching components.
 - Bring-up note: first read `PART_NUM` (expect `0x0b`) and `VERSION_NUM` (expect `0x01` or `0x02`) over SPI before trusting further operation.
