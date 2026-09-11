@@ -18,6 +18,9 @@ Sena Mesh (30K) and Cardo DMC packets.
   the antenna matching network. RFN must never be marked no-connect.
 - Use the manufacturer footprint and pinout for 2450BM15A0015 and retain the
   chip-antenna vendor matching/keepout requirements after the balun.
+- Capture B1 with the installed `Connector_Generic:Conn_01x06` symbol using
+  manufacturer pin numbers: 1 unbalanced, 2 GND, 3 balanced, 4 balanced,
+  5 GND, 6 GND. Use the project footprint `ciu:Johanson_2450BM15A0015`.
   from the datasheet (decoupling, DVDD/AVDD filtering, crystal, RESET,
   SLP_TR, IRQ).
 - 2.4 GHz chip antenna (or PCB inverted-F antenna if a suitable reference
