@@ -2,6 +2,18 @@
 
 Append-only, newest first. One entry per committed copperhead run.
 
+## 2026-09-11 — create pipeline stage: part-selection
+
+- Change: part-selection
+- Files: docs/BOM.md, docs/DECISIONS.md, docs/CHANGELOG.md
+- Verification: ERC not required
+
+## 2026-09-11 — create pipeline stage: part-selection
+
+- Change: part-selection
+- Files: docs/BOM.md, docs/DECISIONS.md, docs/CHANGELOG.md
+- Verification: installed symbols and pins confirmed for U1, J1, Y1, AE1, and TP1-TP5; no schematic exists, so ERC/DRC are not applicable
+
 ## 2026-09-11 — create pipeline stage: architecture
 
 - Change: architecture
