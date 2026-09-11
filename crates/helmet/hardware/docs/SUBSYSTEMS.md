@@ -18,7 +18,7 @@ The 2.54 mm header exposes 3V3, GND, MOSI, MISO, SCLK, /SEL, IRQ, RESET, and SLP
 
 ## Radio and RF
 
-U1 is exclusively the QFN-32 AT86RF233-ZU; AT86RF231, AT86RF212, and other transceiver families are excluded. The radio implements the AT86RF233 datasheet basic application circuit and uses the Microchip reference matching topology. The antenna feed is 50 ohm controlled impedance, with a test point at the feed. The target board is two-layer, 1.6 mm FR-4 with assumed 1 oz copper; the selected fabricator stackup must confirm the feed geometry before layout release.
+U1 is exclusively the QFN-32 AT86RF233-ZU; AT86RF231, AT86RF212, and other transceiver families are excluded. The radio implements the AT86RF233 datasheet basic application circuit: RFP and RFN each connect through a 22 pF C0G series capacitor to the differential side of a Johanson 2450BM15A0015 balun/filter. The balun's 50-ohm single-ended output drives the chip-antenna matching network. Neither RF pin may be left unconnected. The antenna feed is 50 ohm controlled impedance, with a test point at the feed. The target board is two-layer, 1.6 mm FR-4 with assumed 1 oz copper; the selected fabricator stackup must confirm the feed geometry before layout release.
 
 ## UI and audio
 

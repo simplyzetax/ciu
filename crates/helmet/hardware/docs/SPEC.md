@@ -7,6 +7,10 @@ A minimal 2-layer carrier board provides SPI/GPIO access to a Microchip AT86RF23
 ## Required circuitry
 
 - U1 shall be an AT86RF233-ZU in QFN-32; AT86RF231, AT86RF212, and other transceiver families are forbidden.
+- U1 RFP and RFN shall each pass through a 22 pF C0G series capacitor into the
+  differential inputs of a Johanson 2450BM15A0015 balun/filter. Its 50-ohm
+  single-ended output shall feed the antenna matching network. Neither RF pin
+  may be left unconnected.
 - The schematic shall implement the datasheet basic application circuit: decoupling, DVDD/AVDD filtering, crystal, RESET, SLP_TR, and IRQ.
 - A 2.4 GHz chip antenna or a PCB inverted-F antenna with a suitable reference layout shall use the Microchip reference matching network.
 - The antenna feed shall be controlled impedance, 50 ohm.
