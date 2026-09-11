@@ -80,5 +80,13 @@
       "pcb",
       "bom"
     ]
+  },
+  "firmware.xiao_esp32c6_gpio_wiring": {
+    "value": "Defaults: MOSI GPIO18, MISO GPIO20, SCLK GPIO19, SEL GPIO17, IRQ GPIO2, RESET GPIO1, SLP_TR GPIO0; configurable in ESP-IDF; avoid strapping GPIO8, GPIO9, GPIO15",
+    "source": "DEVPLAN.md: Firmware scaffold",
+    "affects": [
+      "firmware",
+      "host-wiring"
+    ]
   }
 }

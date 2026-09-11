@@ -1,5 +1,17 @@
 # Design changelog
 
+## 2026-09-11 — create pipeline stage: firmware
+
+- Change: firmware
+- Files: firmware/CMakeLists.txt, firmware/main/CMakeLists.txt, firmware/main/Kconfig.projbuild, firmware/generate_pins.py, firmware/main/pins.h, firmware/main/at86rf233.h, firmware/main/at86rf233.c, firmware/main/main.c, DEVPLAN.md, docs/CHANGELOG.md, docs/DECISIONS.md
+- Verification: ERC clean, DRC clean
+
+## 2026-09-11 — create pipeline stage: firmware
+
+- Change: firmware
+- Files: firmware/, DEVPLAN.md, docs/DECISIONS.md, docs/CHANGELOG.md
+- Verification: pins.h generated from docs/PINOUT.md; ESP-IDF toolchain unavailable through Copperhead, so not compiled here; documentation drift checked
+
 ## 2026-09-11 — create pipeline stage: outputs
 
 - Change: outputs

@@ -1,0 +1,31 @@
+menu "AT86RF233 carrier wiring"
+
+config AT86RF233_PIN_MOSI
+    int "J1.3 MOSI GPIO"
+    default 18
+
+config AT86RF233_PIN_MISO
+    int "J1.4 MISO GPIO"
+    default 20
+
+config AT86RF233_PIN_SCLK
+    int "J1.5 SCLK GPIO"
+    default 19
+
+config AT86RF233_PIN_SEL
+    int "J1.6 SEL GPIO"
+    default 17
+
+config AT86RF233_PIN_IRQ
+    int "J1.7 IRQ GPIO"
+    default 2
+
+config AT86RF233_PIN_RESET
+    int "J1.8 RESET GPIO"
+    default 1
+
+config AT86RF233_PIN_SLP_TR
+    int "J1.9 SLP_TR GPIO"
+    default 0
+
+endmenu
