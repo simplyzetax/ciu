@@ -1,1 +1,24 @@
+#!/usr/bin/env sh
+
 cargo check-esp
+
+# Auto-repair copperhead's phantom copperhead_power:* symbols in any staged
+# .kicad_sch before it gets committed. copperhead's draft_schematic step
+# regenerates the schematic from schematic.intent.json on every redraft and
+# can reintroduce these non-installed symbols even after they were
+# previously fixed.
+FIX_SCRIPT="crates/helmet/hardware/fix_power_symbols.py"
+STAGED_SCH=$(git diff --cached --name-only --diff-filter=ACM -- '*.kicad_sch')
+
+for f in $STAGED_SCH; do
+    [ -f "$f" ] || continue
+    if grep -q 'copperhead_power:' "$f"; then
+        echo "pre-commit: repairing phantom copperhead_power:* symbols in $f"
+        python3 "$FIX_SCRIPT" "$f"
+        if grep -q 'copperhead_power:' "$f"; then
+            echo "pre-commit: fix script ran but $f still contains copperhead_power:* — aborting commit" >&2
+            exit 1
+        fi
+        git add "$f"
+    fi
+done
