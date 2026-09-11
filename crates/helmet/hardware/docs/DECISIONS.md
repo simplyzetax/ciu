@@ -1,0 +1,1 @@
+- 2026-09-11 [run 2026-09-11T00-46-05-442Z] Target the AT86RF233 datasheet basic application circuit and reference RF topology on a two-layer board. | why: It satisfies the stated minimal carrier scope while preserving the two-layer cost target. | affects: docs/SPEC.md, schematic, PCB, BOM

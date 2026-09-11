@@ -32,27 +32,25 @@ fn run() -> anyhow::Result<()> {
     let mut wire = Wire::new(io);
     let pairing_network = Arc::clone(&network);
 
-    let _pairing_thread = spawn_pairing_task(move || {
-        loop {
-            let result = pair_as_goggle(&mut wire, my_mac, &pairing_network);
+    let _pairing_thread = spawn_pairing_task(move || loop {
+        let result = pair_as_goggle(&mut wire, my_mac, &pairing_network);
 
-            match result {
-                Ok(helmet_mac) => {
-                    println!("Paired with helmet {:02X?}", helmet_mac);
-                    led.set_high().ok();
+        match result {
+            Ok(helmet_mac) => {
+                println!("Paired with helmet {:02X?}", helmet_mac);
+                led.set_high().ok();
+            }
+            Err(error) => {
+                let is_timeout = error
+                    .chain()
+                    .any(|cause| cause.to_string().contains("wire receive timed out"));
+
+                if !is_timeout {
+                    println!("Pairing failed: {error:#}");
+                    led.set_low().ok();
                 }
-                Err(error) => {
-                    let is_timeout = error
-                        .chain()
-                        .any(|cause| cause.to_string().contains("wire receive timed out"));
 
-                    if !is_timeout {
-                        println!("Pairing failed: {error:#}");
-                        led.set_low().ok();
-                    }
-
-                    FreeRtos::delay_ms(100);
-                }
+                FreeRtos::delay_ms(100);
             }
         }
     })?;
