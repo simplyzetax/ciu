@@ -12,6 +12,12 @@ Sena Mesh (30K) and Cardo DMC packets.
 ## Scope
 
 - AT86RF233-ZU transceiver, QFN-32, with full basic application circuit
+- Implement the datasheet RF port exactly as a differential port: U1 RFP and RFN
+  must both connect through 22 pF C0G series coupling capacitors to a
+  Johanson 2450BM15A0015 2.45 GHz balun/filter. Its single-ended output feeds
+  the antenna matching network. RFN must never be marked no-connect.
+- Use the manufacturer footprint and pinout for 2450BM15A0015 and retain the
+  chip-antenna vendor matching/keepout requirements after the balun.
   from the datasheet (decoupling, DVDD/AVDD filtering, crystal, RESET,
   SLP_TR, IRQ).
 - 2.4 GHz chip antenna (or PCB inverted-F antenna if a suitable reference
