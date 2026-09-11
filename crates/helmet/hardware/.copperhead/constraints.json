@@ -6,22 +6,12 @@
       "schematic",
       "pcb",
       "bom"
-    ],
-    "deferred": [
-      "schematic",
-      "pcb",
-      "bom"
     ]
   },
   "power.average_current_mA": {
     "max": 40,
     "source": "docs/SPEC.md: Constraints and budgets",
     "affects": [
-      "schematic",
-      "pcb",
-      "bom"
-    ],
-    "deferred": [
       "schematic",
       "pcb",
       "bom"
@@ -34,11 +24,6 @@
       "schematic",
       "pcb",
       "bom"
-    ],
-    "deferred": [
-      "schematic",
-      "pcb",
-      "bom"
     ]
   },
   "mechanical.board_width_mm": {
@@ -46,18 +31,12 @@
     "source": "docs/SPEC.md: Constraints and budgets",
     "affects": [
       "pcb"
-    ],
-    "deferred": [
-      "pcb"
     ]
   },
   "mechanical.board_height_mm": {
     "max": 20,
     "source": "docs/SPEC.md: Constraints and budgets",
     "affects": [
-      "pcb"
-    ],
-    "deferred": [
       "pcb"
     ]
   },
@@ -67,9 +46,6 @@
     "affects": [
       "pcb",
       "antenna"
-    ],
-    "deferred": [
-      "pcb"
     ]
   },
   "rf.antenna_feed_impedance_ohm": {
@@ -78,9 +54,6 @@
     "affects": [
       "pcb",
       "antenna"
-    ],
-    "deferred": [
-      "pcb"
     ]
   },
   "pcb.copper_weight": {
@@ -89,9 +62,6 @@
     "affects": [
       "pcb",
       "antenna"
-    ],
-    "deferred": [
-      "pcb"
     ]
   },
   "interface.host_logic_voltage": {
@@ -100,21 +70,12 @@
     "affects": [
       "schematic",
       "pcb"
-    ],
-    "deferred": [
-      "schematic",
-      "pcb"
     ]
   },
   "component.transceiver": {
     "value": "AT86RF233-ZU only; AT86RF231, AT86RF212, and other families forbidden",
     "source": "docs/SPEC.md: Required circuitry",
     "affects": [
-      "schematic",
-      "pcb",
-      "bom"
-    ],
-    "deferred": [
       "schematic",
       "pcb",
       "bom"

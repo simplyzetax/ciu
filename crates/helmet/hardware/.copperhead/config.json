@@ -1,6 +1,6 @@
 {
-  "schematic": null,
-  "board": null,
+  "schematic": "at86rf233-spi-carrier-board-for-esp32-c6-host.kicad_sch",
+  "board": "at86rf233-spi-carrier-board-for-esp32-c6-host.kicad_pcb",
   "docs": "docs/",
   "model": null,
   "maxTurns": 40,
