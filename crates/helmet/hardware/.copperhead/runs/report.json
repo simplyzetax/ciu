@@ -1,8 +1,8 @@
 {
-  "generatedAtMs": 1789148498489,
+  "generatedAtMs": 1789151580921,
   "stageCount": 8,
-  "ran": 1,
-  "resumed": 4,
+  "ran": 3,
+  "resumed": 5,
   "stages": [
     {
       "name": "spec-seed",
@@ -46,29 +46,59 @@
     },
     {
       "name": "layout-draft",
+      "resumed": true,
+      "wallMs": 0,
+      "turns": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "cacheHits": 0,
+      "cacheHitPct": null
+    },
+    {
+      "name": "outputs",
       "resumed": false,
-      "wallMs": 929469,
-      "turns": 19,
-      "tokensIn": 16826660,
-      "tokensOut": 186120,
-      "cacheHits": 1,
-      "cacheHitPct": 5
+      "wallMs": 75306,
+      "turns": 3,
+      "tokensIn": 213796,
+      "tokensOut": 4290,
+      "cacheHits": 0,
+      "cacheHitPct": 0
+    },
+    {
+      "name": "firmware",
+      "resumed": false,
+      "wallMs": 318467,
+      "turns": 7,
+      "tokensIn": 641585,
+      "tokensOut": 18359,
+      "cacheHits": 0,
+      "cacheHitPct": 0
+    },
+    {
+      "name": "devplan",
+      "resumed": false,
+      "wallMs": 101159,
+      "turns": 3,
+      "tokensIn": 189472,
+      "tokensOut": 6319,
+      "cacheHits": 0,
+      "cacheHitPct": 0
     }
   ],
   "total": {
-    "wallMs": 929469,
-    "turns": 19,
-    "tokensIn": 16826660,
-    "tokensOut": 186120,
-    "cacheHits": 1,
-    "cacheHitPct": 5
+    "wallMs": 494932,
+    "turns": 13,
+    "tokensIn": 1044853,
+    "tokensOut": 28968,
+    "cacheHits": 0,
+    "cacheHitPct": 0
   },
   "slowestStage": {
-    "name": "layout-draft",
-    "wallMs": 929469
+    "name": "firmware",
+    "wallMs": 318467
   },
   "mostExpensiveStage": {
-    "name": "layout-draft",
-    "tokensOut": 186120
+    "name": "firmware",
+    "tokensOut": 18359
   }
 }

@@ -9,7 +9,10 @@ Resumed stages were already complete on entry and cost nothing this run.
 | architecture | — | — | — | — | — | resumed |
 | part-selection | — | — | — | — | — | resumed |
 | schematic | — | — | — | — | — | resumed |
-| layout-draft | 15m29s | 19 | 16826.7k | 186.1k | 5% | ran |
-| **Total** | 15m29s | 19 | 16826.7k | 186.1k | 5% |  |
+| layout-draft | — | — | — | — | — | resumed |
+| outputs | 1m15s | 3 | 213.8k | 4.3k | 0% | ran |
+| firmware | 5m18s | 7 | 641.6k | 18.4k | 0% | ran |
+| devplan | 1m41s | 3 | 189.5k | 6.3k | 0% | ran |
+| **Total** | 8m15s | 13 | 1044.9k | 29.0k | 0% |  |
 
-Slowest stage: **layout-draft** (15m29s). Most expensive: **layout-draft** (186.1k out tokens).
+Slowest stage: **firmware** (5m18s). Most expensive: **firmware** (18.4k out tokens).
