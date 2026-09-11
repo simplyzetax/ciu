@@ -3,6 +3,18 @@
 ## 2026-09-11 — create pipeline stage: part-selection
 
 - Change: part-selection
+- Files: docs/CHANGELOG.md, docs/DECISIONS.md
+- Verification: ERC not required
+
+## 2026-09-11 — verify pipeline stage: part-selection
+
+- Change: part-selection
+- Files: docs/BOM.md, docs/DECISIONS.md, docs/CHANGELOG.md
+- Verification: BOM non-empty with exact five-column format and one row per refdes; U1, B1, AE1, J1, Y1, FB1, and TP1-TP5 installed symbols and real pins confirmed; all MPNs remain UNVERIFIED; current-budget impacts reviewed; documentation drift checked
+
+## 2026-09-11 — create pipeline stage: part-selection
+
+- Change: part-selection
 - Files: docs/BOM.md, docs/DECISIONS.md, docs/CHANGELOG.md, schematic.intent.json, docs/PINOUT.md, at86rf233-spi-carrier-board-for-esp32-c6-host.kicad_sch
 - Verification: ERC clean
 

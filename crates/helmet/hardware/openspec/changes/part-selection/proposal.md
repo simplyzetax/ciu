@@ -4,12 +4,12 @@
 
 ## Why
 
-Create a stage-4-capturable BOM whose rows map one-to-one to schematic refdes while preserving the specified AT86RF233 carrier architecture and power limits.
+Complete Stage 3 with a non-empty, machine-capturable BOM whose Value cells contain only component values, whose rows map one-to-one to refdes, and whose selections preserve the documented power and RF constraints.
 
 ## What Changes
 
-- Rewrite docs/BOM.md in the fixed Refdes/Value/Footprint/MPN/Rationale format with one row per refdes.
-- Keep Value cells limited to component values and move all descriptive prose to Rationale.
-- Mark every introduced MPN UNVERIFIED and justify it with datasheet-verifiable electrical, package, RF, and current characteristics.
-- Confirm installed KiCad symbols and real pin numbers for every IC, connector, and other active/non-passive symbol.
-- Record the selection rationale and append the run to the changelog.
+- Verify and, only where needed, correct `docs/BOM.md` to use exactly `| Refdes | Value | Footprint | MPN | Rationale |`.
+- Keep one row per individual refdes and value-only Value cells.
+- Keep every MPN marked UNVERIFIED with datasheet-verifiable selection rationale and leakage/quiescent-current budget impact.
+- Confirm installed KiCad symbols and authoritative pins for every IC, connector, module, and specialized schematic part.
+- Record the completed stage in design documentation without changing the schematic or PCB.
